@@ -1213,35 +1213,52 @@
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-bottom: 30px;">
                         <div style="background: #ff6b6b; padding: 15px; border-radius: 10px; color: white;">
                             <strong>🔴 Red Team</strong>
-                            <input type="text" class="team-name-input" id="teamName_red" placeholder="e.g., Red Warriors" onchange="window.updateTeamName('red', this.value)">
+                            <input type="text" class="team-name-input" id="teamName_red" placeholder="e.g., Red Warriors" 
+                                   onblur="window.updateTeamName('red', this.value)"
+                                   onkeypress="if(event.key==='Enter'){event.preventDefault();this.blur();}">
                         </div>
                         <div style="background: #4facfe; padding: 15px; border-radius: 10px; color: white;">
                             <strong>🔵 Blue Team</strong>
-                            <input type="text" class="team-name-input" id="teamName_blue" placeholder="e.g., Blue Legends" onchange="window.updateTeamName('blue', this.value)">
+                            <input type="text" class="team-name-input" id="teamName_blue" placeholder="e.g., Blue Legends" 
+                                   onblur="window.updateTeamName('blue', this.value)"
+                                   onkeypress="if(event.key==='Enter'){event.preventDefault();this.blur();}">
                         </div>
                         <div style="background: #7ed957; padding: 15px; border-radius: 10px; color: white;">
                             <strong>🟢 Green Team</strong>
-                            <input type="text" class="team-name-input" id="teamName_green" placeholder="e.g., Green Machines" onchange="window.updateTeamName('green', this.value)">
+                            <input type="text" class="team-name-input" id="teamName_green" placeholder="e.g., Green Machines" 
+                                   onblur="window.updateTeamName('green', this.value)"
+                                   onkeypress="if(event.key==='Enter'){event.preventDefault();this.blur();}">
                         </div>
                         <div style="background: #ffd93d; padding: 15px; border-radius: 10px; color: #333;">
                             <strong>🟡 Yellow Team</strong>
-                            <input type="text" class="team-name-input" id="teamName_yellow" placeholder="e.g., Yellow Thunder" onchange="window.updateTeamName('yellow', this.value)" style="color: #333; background: rgba(255,255,255,0.8);">
+                            <input type="text" class="team-name-input" id="teamName_yellow" placeholder="e.g., Yellow Thunder" 
+                                   onblur="window.updateTeamName('yellow', this.value)"
+                                   onkeypress="if(event.key==='Enter'){event.preventDefault();this.blur();}" 
+                                   style="color: #333; background: rgba(255,255,255,0.8);">
                         </div>
                         <div style="background: #a55eea; padding: 15px; border-radius: 10px; color: white;">
                             <strong>🟣 Purple Team</strong>
-                            <input type="text" class="team-name-input" id="teamName_purple" placeholder="e.g., Purple Reign" onchange="window.updateTeamName('purple', this.value)">
+                            <input type="text" class="team-name-input" id="teamName_purple" placeholder="e.g., Purple Reign" 
+                                   onblur="window.updateTeamName('purple', this.value)"
+                                   onkeypress="if(event.key==='Enter'){event.preventDefault();this.blur();}">
                         </div>
                         <div style="background: #ff9f43; padding: 15px; border-radius: 10px; color: white;">
                             <strong>🟠 Orange Team</strong>
-                            <input type="text" class="team-name-input" id="teamName_orange" placeholder="e.g., Orange Crush" onchange="window.updateTeamName('orange', this.value)">
+                            <input type="text" class="team-name-input" id="teamName_orange" placeholder="e.g., Orange Crush" 
+                                   onblur="window.updateTeamName('orange', this.value)"
+                                   onkeypress="if(event.key==='Enter'){event.preventDefault();this.blur();}">
                         </div>
                         <div style="background: #fd79a8; padding: 15px; border-radius: 10px; color: white;">
                             <strong>🩷 Pink Team</strong>
-                            <input type="text" class="team-name-input" id="teamName_pink" placeholder="e.g., Pink Panthers" onchange="window.updateTeamName('pink', this.value)">
+                            <input type="text" class="team-name-input" id="teamName_pink" placeholder="e.g., Pink Panthers" 
+                                   onblur="window.updateTeamName('pink', this.value)"
+                                   onkeypress="if(event.key==='Enter'){event.preventDefault();this.blur();}">
                         </div>
                         <div style="background: #00d2d3; padding: 15px; border-radius: 10px; color: white;">
                             <strong>🩵 Teal Team</strong>
-                            <input type="text" class="team-name-input" id="teamName_teal" placeholder="e.g., Teal Titans" onchange="window.updateTeamName('teal', this.value)">
+                            <input type="text" class="team-name-input" id="teamName_teal" placeholder="e.g., Teal Titans" 
+                                   onblur="window.updateTeamName('teal', this.value)"
+                                   onkeypress="if(event.key==='Enter'){event.preventDefault();this.blur();}">
                         </div>
                     </div>
                 </div>
