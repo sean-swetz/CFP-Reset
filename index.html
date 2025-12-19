@@ -471,6 +471,8 @@
         .user-actions {
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
         }
 
         .small-btn {
@@ -490,6 +492,64 @@
         .btn-show {
             background: #28a745;
             color: white;
+        }
+
+        .team-select {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 2px solid #e0e0e0;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .team-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 700;
+            color: white;
+            margin-left: 8px;
+        }
+
+        .team-red { background: #ff6b6b; }
+        .team-blue { background: #4facfe; }
+        .team-green { background: #7ed957; }
+        .team-yellow { background: #ffd93d; color: #333; }
+        .team-purple { background: #a55eea; }
+        .team-orange { background: #ff9f43; }
+        .team-pink { background: #fd79a8; }
+        .team-teal { background: #00d2d3; }
+
+        .team-leaderboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .team-card {
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .team-card h3 {
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .team-card .team-stat {
+            font-size: 2em;
+            font-weight: 700;
+        }
+
+        .team-card .team-members {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-top: 5px;
         }
 
         @media (max-width: 600px) {
@@ -852,16 +912,27 @@
         <div id="leaderboard" class="section">
             <div class="card">
                 <h2>🏆 Leaderboard</h2>
+                
+                <!-- Team Standings -->
+                <div id="teamStandings" style="margin-bottom: 30px;">
+                    <h3 style="color: #4facfe; margin-bottom: 15px;">Team Standings</h3>
+                    <div class="team-leaderboard" id="teamLeaderboard">
+                        <!-- Team cards will be inserted here -->
+                    </div>
+                </div>
+
+                <h3 style="color: #4facfe; margin-bottom: 15px;">Individual Rankings</h3>
                 <table class="leaderboard-table">
                     <thead>
                         <tr>
                             <th>Rank</th>
                             <th>Name</th>
+                            <th>Team</th>
                             <th>Total Points</th>
                         </tr>
                     </thead>
                     <tbody id="leaderboardBody">
-                        <tr><td colspan="3" style="text-align: center; padding: 30px;">Loading...</td></tr>
+                        <tr><td colspan="4" style="text-align: center; padding: 30px;">Loading...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -904,10 +975,41 @@
                 </div>
 
                 <div style="margin-top: 30px;">
-                    <h3>Manage User Visibility</h3>
-                    <p style="margin-bottom: 15px; color: #666;">Hide users from the leaderboard (they can still check in and see their own progress).</p>
+                    <h3>Manage User Teams & Visibility</h3>
+                    <p style="margin-bottom: 15px; color: #666;">Assign users to colored teams and control leaderboard visibility.</p>
                     <div class="user-list" id="adminUserList">
                         <p style="text-align: center; padding: 20px;">Loading users...</p>
+                    </div>
+                </div>
+
+                <div class="export-section" style="margin-top: 30px;">
+                    <h3>Export by Team</h3>
+                    <p style="margin-bottom: 15px; color: #666;">Download user and check-in data filtered by team.</p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                        <button class="btn btn-secondary" onclick="exportTeamData('red')" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);">
+                            📊 Red Team
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportTeamData('blue')" style="background: linear-gradient(135deg, #4facfe 0%, #3d8fd1 100%);">
+                            📊 Blue Team
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportTeamData('green')" style="background: linear-gradient(135deg, #7ed957 0%, #5cb85c 100%);">
+                            📊 Green Team
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportTeamData('yellow')" style="background: linear-gradient(135deg, #ffd93d 0%, #f5c542 100%);">
+                            📊 Yellow Team
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportTeamData('purple')" style="background: linear-gradient(135deg, #a55eea 0%, #8854d0 100%);">
+                            📊 Purple Team
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportTeamData('orange')" style="background: linear-gradient(135deg, #ff9f43 0%, #ee8f34 100%);">
+                            📊 Orange Team
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportTeamData('pink')" style="background: linear-gradient(135deg, #fd79a8 0%, #e66992 100%);">
+                            📊 Pink Team
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportTeamData('teal')" style="background: linear-gradient(135deg, #00d2d3 0%, #00b4b5 100%);">
+                            📊 Teal Team
+                        </button>
                     </div>
                 </div>
             </div>
@@ -922,14 +1024,14 @@
         import { getFirestore, doc, setDoc, getDoc, collection, query, orderBy, where, getDocs, updateDoc, increment, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         // REPLACE THESE WITH YOUR FIREBASE CONFIG
-       const firebaseConfig = {
-  apiKey: "AIzaSyDbvV8uX5OnPRJChm6Q58ca7lyvHg2jqRo",
+        const firebaseConfig = {
+            apiKey: "AIzaSyDbvV8uX5OnPRJChm6Q58ca7lyvHg2jqRo",
   authDomain: "reset-2026-tracker.firebaseapp.com",
   projectId: "reset-2026-tracker",
   storageBucket: "reset-2026-tracker.firebasestorage.app",
   messagingSenderId: "867262535384",
   appId: "1:867262535384:web:a9d18d62159c657f4ca9ad"
-};
+        };
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
@@ -1033,6 +1135,7 @@
                     name: name,
                     email: email,
                     totalPoints: 0,
+                    team: 'none',
                     hiddenFromLeaderboard: false,
                     registeredAt: new Date().toISOString()
                 });
@@ -1225,24 +1328,49 @@
         // Load Leaderboard
         async function loadLeaderboard() {
             const tbody = document.getElementById('leaderboardBody');
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 30px;">Loading...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px;">Loading...</td></tr>';
 
             try {
-                const q = query(
-                    collection(db, 'users'), 
-                    where('hiddenFromLeaderboard', '==', false),
-                    orderBy('totalPoints', 'desc')
-                );
+                // Fetch all users (no complex query to avoid indexing issues)
+                const q = query(collection(db, 'users'));
                 const querySnapshot = await getDocs(q);
                 
                 const leaderboardData = [];
+                const teamTotals = {
+                    red: { points: 0, members: 0 },
+                    blue: { points: 0, members: 0 },
+                    green: { points: 0, members: 0 },
+                    yellow: { points: 0, members: 0 },
+                    purple: { points: 0, members: 0 },
+                    orange: { points: 0, members: 0 },
+                    pink: { points: 0, members: 0 },
+                    teal: { points: 0, members: 0 }
+                };
+
                 querySnapshot.forEach((doc) => {
-                    leaderboardData.push({ uid: doc.id, ...doc.data() });
+                    const userData = doc.data();
+                    // Only include users who aren't hidden from leaderboard
+                    if (!userData.hiddenFromLeaderboard) {
+                        leaderboardData.push({ uid: doc.id, ...userData });
+                        
+                        // Calculate team totals
+                        const team = userData.team || 'none';
+                        if (teamTotals[team]) {
+                            teamTotals[team].points += (userData.totalPoints || 0);
+                            teamTotals[team].members += 1;
+                        }
+                    }
                 });
+
+                // Sort by points (client-side)
+                leaderboardData.sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
+
+                // Display team standings
+                displayTeamStandings(teamTotals);
 
                 tbody.innerHTML = '';
                 if (leaderboardData.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 30px; color: #999;">No check-ins yet. Be the first!</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px; color: #999;">No check-ins yet. Be the first!</td></tr>';
                     return;
                 }
 
@@ -1250,18 +1378,49 @@
                     const row = tbody.insertRow();
                     const rankClass = index < 3 ? `rank-${index + 1}` : '';
                     const isCurrentUser = currentUser && member.uid === currentUser.uid;
+                    const teamBadge = member.team && member.team !== 'none' 
+                        ? `<span class="team-badge team-${member.team}">${member.team.toUpperCase()}</span>`
+                        : '';
+                    
                     row.style.background = isCurrentUser ? '#e8f5e9' : '';
                     row.innerHTML = `
                         <td><span class="rank ${rankClass}">${index + 1}</span></td>
                         <td>${member.name}${isCurrentUser ? ' (You)' : ''}</td>
+                        <td>${teamBadge || '<span style="color: #999;">No Team</span>'}</td>
                         <td><strong>${member.totalPoints || 0} pts</strong></td>
                     `;
                 });
 
             } catch (error) {
                 console.error('Leaderboard error:', error);
-                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 30px;">Error loading leaderboard</td></tr>';
+                console.error('Full error details:', error.message, error.code);
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 30px; color: #ff6b6b;">
+                    Error loading leaderboard: ${error.message}<br><small>Check console for details</small>
+                </td></tr>`;
             }
+        }
+
+        function displayTeamStandings(teamTotals) {
+            const teamLeaderboard = document.getElementById('teamLeaderboard');
+            
+            // Convert to array and sort by points
+            const teams = Object.entries(teamTotals)
+                .map(([name, data]) => ({ name, ...data }))
+                .filter(team => team.members > 0)
+                .sort((a, b) => b.points - a.points);
+
+            if (teams.length === 0) {
+                teamLeaderboard.innerHTML = '<p style="text-align: center; color: #999;">No teams assigned yet</p>';
+                return;
+            }
+
+            teamLeaderboard.innerHTML = teams.map(team => `
+                <div class="team-card team-${team.name}">
+                    <h3>${team.name.toUpperCase()} TEAM</h3>
+                    <div class="team-stat">${team.points} pts</div>
+                    <div class="team-members">${team.members} member${team.members !== 1 ? 's' : ''}</div>
+                </div>
+            `).join('');
         }
 
         window.loadLeaderboard = loadLeaderboard;
@@ -1300,15 +1459,31 @@
                 users.forEach(user => {
                     const userItem = document.createElement('div');
                     userItem.className = 'user-item';
+                    
+                    const teamBadge = user.team && user.team !== 'none' 
+                        ? `<span class="team-badge team-${user.team}">${user.team.toUpperCase()}</span>`
+                        : '<span style="color: #999; font-size: 0.9em;">No Team</span>';
+                    
                     userItem.innerHTML = `
                         <div class="user-info">
-                            <strong>${user.name}</strong><br>
+                            <strong>${user.name}</strong> ${teamBadge}<br>
                             <small>${user.email} • ${user.totalPoints || 0} points</small>
                         </div>
                         <div class="user-actions">
+                            <select class="team-select" onchange="window.assignTeam('${user.uid}', this.value)">
+                                <option value="none" ${(!user.team || user.team === 'none') ? 'selected' : ''}>No Team</option>
+                                <option value="red" ${user.team === 'red' ? 'selected' : ''}>🔴 Red</option>
+                                <option value="blue" ${user.team === 'blue' ? 'selected' : ''}>🔵 Blue</option>
+                                <option value="green" ${user.team === 'green' ? 'selected' : ''}>🟢 Green</option>
+                                <option value="yellow" ${user.team === 'yellow' ? 'selected' : ''}>🟡 Yellow</option>
+                                <option value="purple" ${user.team === 'purple' ? 'selected' : ''}>🟣 Purple</option>
+                                <option value="orange" ${user.team === 'orange' ? 'selected' : ''}>🟠 Orange</option>
+                                <option value="pink" ${user.team === 'pink' ? 'selected' : ''}>🩷 Pink</option>
+                                <option value="teal" ${user.team === 'teal' ? 'selected' : ''}>🩵 Teal</option>
+                            </select>
                             ${user.hiddenFromLeaderboard 
-                                ? `<button class="small-btn btn-show" onclick="window.toggleUserVisibility('${user.uid}', false)">Show on Leaderboard</button>`
-                                : `<button class="small-btn btn-hide" onclick="window.toggleUserVisibility('${user.uid}', true)">Hide from Leaderboard</button>`
+                                ? `<button class="small-btn btn-show" onclick="window.toggleUserVisibility('${user.uid}', false)">Show</button>`
+                                : `<button class="small-btn btn-hide" onclick="window.toggleUserVisibility('${user.uid}', true)">Hide</button>`
                             }
                         </div>
                     `;
@@ -1336,6 +1511,50 @@
             }
         };
 
+        window.assignTeam = async function(userId, team) {
+            if (!isAdmin) return;
+
+            try {
+                const userRef = doc(db, 'users', userId);
+                await updateDoc(userRef, {
+                    team: team
+                });
+                loadAdminData();
+                loadLeaderboard();
+            } catch (error) {
+                console.error('Assign team error:', error);
+                alert('Failed to assign team');
+            }
+        };
+
+        window.exportTeamData = async function(teamColor) {
+            if (!isAdmin) return;
+
+            try {
+                const usersQuery = query(collection(db, 'users'));
+                const usersSnapshot = await getDocs(usersQuery);
+
+                let csv = 'Name,Email,Team,Total Points,Hidden from Leaderboard,Registered At,Last Check-in\n';
+
+                usersSnapshot.forEach((doc) => {
+                    const user = doc.data();
+                    if (user.team === teamColor) {
+                        csv += `"${user.name}","${user.email}","${user.team || 'none'}",${user.totalPoints || 0},${user.hiddenFromLeaderboard ? 'Yes' : 'No'},"${user.registeredAt || ''}","${user.lastCheckin || ''}"\n`;
+                    }
+                });
+
+                if (csv.split('\n').length <= 2) {
+                    alert(`No members found on ${teamColor} team`);
+                    return;
+                }
+
+                downloadCSV(csv, `reset-2026-${teamColor}-team.csv`);
+            } catch (error) {
+                console.error('Export team error:', error);
+                alert('Failed to export team data');
+            }
+        };
+
         window.exportUsersCSV = async function() {
             if (!isAdmin) return;
 
@@ -1343,11 +1562,11 @@
                 const usersQuery = query(collection(db, 'users'), orderBy('totalPoints', 'desc'));
                 const usersSnapshot = await getDocs(usersQuery);
 
-                let csv = 'Name,Email,Total Points,Hidden from Leaderboard,Registered At,Last Check-in\n';
+                let csv = 'Name,Email,Team,Total Points,Hidden from Leaderboard,Registered At,Last Check-in\n';
 
                 usersSnapshot.forEach((doc) => {
                     const user = doc.data();
-                    csv += `"${user.name}","${user.email}",${user.totalPoints || 0},${user.hiddenFromLeaderboard ? 'Yes' : 'No'},"${user.registeredAt || ''}","${user.lastCheckin || ''}"\n`;
+                    csv += `"${user.name}","${user.email}","${user.team || 'none'}",${user.totalPoints || 0},${user.hiddenFromLeaderboard ? 'Yes' : 'No'},"${user.registeredAt || ''}","${user.lastCheckin || ''}"\n`;
                 });
 
                 downloadCSV(csv, 'reset-2026-users.csv');
