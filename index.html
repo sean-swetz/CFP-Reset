@@ -774,6 +774,130 @@
                 width: 100%;
             }
         }
+        /* Locker Room Styles */
+.locker-room-challenge {
+    background: linear-gradient(135deg, #4facfe 0%, #3d8fd1 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+}
+
+.locker-room-challenge h3 {
+    font-size: 1.8em;
+    margin-bottom: 15px;
+}
+
+.challenge-text {
+    font-size: 1.2em;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.edit-challenge-btn {
+    background: white;
+    color: #4facfe;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.challenge-edit-area {
+    width: 100%;
+    padding: 15px;
+    border-radius: 10px;
+    border: 2px solid white;
+    font-size: 1.1em;
+    margin: 15px 0;
+    min-height: 100px;
+}
+
+.messages-container {
+    max-height: 600px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
+
+.message-item {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    border-left: 4px solid #4facfe;
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.message-author {
+    font-weight: 700;
+    font-size: 1.1em;
+    color: #333;
+}
+
+.message-timestamp {
+    color: #999;
+    font-size: 0.9em;
+}
+
+.message-text {
+    color: #333;
+    font-size: 1.05em;
+    line-height: 1.5;
+}
+
+.delete-message-btn {
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    padding: 5px 12px;
+    border-radius: 5px;
+    font-size: 0.85em;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.message-input-container {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.message-input-container textarea {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 1em;
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+}
+
+.message-input-container textarea:focus {
+    outline: none;
+    border-color: #4facfe;
+}
+
+.char-counter {
+    text-align: right;
+    color: #999;
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
+.char-counter.warning {
+    color: #ff6b6b;
+}
     </style>
 </head>
 <body>
@@ -1304,13 +1428,45 @@
             </div>
         </div>
     </div>
+<!-- The Locker Room -->
+        <div id="locker" class="section">
+            <div class="card">
+                <h2>💬 The Locker Room</h2>
+                <p style="color: #666; margin-bottom: 20px;">Share PRs, wins, and talk with your teammates!</p>
 
+                <!-- Weekly Challenge -->
+                <div class="locker-room-challenge" id="weeklyChallenge">
+                    <h3>🎯 This Week's Challenge</h3>
+                    <div class="challenge-text" id="challengeText">
+                        Loading challenge...
+                    </div>
+                    <button class="edit-challenge-btn" id="editChallengeBtn" style="display: none;" onclick="editChallenge()">
+                        ✏️ Edit Challenge
+                    </button>
+                </div>
+
+                <!-- Messages -->
+                <h3 style="margin-bottom: 15px;">📢 Message Board</h3>
+                <div class="messages-container" id="messagesContainer">
+                    <p style="text-align: center; padding: 30px; color: #999;">Loading messages...</p>
+                </div>
+
+                <!-- Post Message -->
+                <div class="message-input-container">
+                    <textarea id="messageInput" placeholder="Share a PR, celebrate a win, or talk some friendly trash... 💪" maxlength="500"></textarea>
+                    <div class="char-counter" id="charCounter">0 / 500</div>
+                    <button class="btn" onclick="postMessage()" id="postMessageBtn" style="margin-top: 15px;">
+                        📤 Post Message
+                    </button>
+                </div>
+            </div>
+        </div>
     <!-- Firebase SDK -->
     <script type="module">
         // Import Firebase modules
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, doc, setDoc, getDoc, collection, query, orderBy, where, getDocs, updateDoc, increment, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, doc, setDoc, getDoc, collection, query, orderBy, where, getDocs, updateDoc, increment, addDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
         import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
         // REPLACE THESE WITH YOUR FIREBASE CONFIG
         const firebaseConfig = {
@@ -1530,6 +1686,9 @@
                 loadLeaderboard();
             } else if (sectionName === 'teams') {
                 loadTeamsPage();
+            } else if (sectionName === 'locker') {
+                loadWeeklyChallenge();
+                loadMessages();
             } else if (sectionName === 'admin' && isAdmin) {
                 loadAdminData();
             }
@@ -2180,7 +2339,190 @@
             a.click();
             document.body.removeChild(a);
         }
+// ===== LOCKER ROOM FUNCTIONS =====
 
+        // Load weekly challenge
+        async function loadWeeklyChallenge() {
+            try {
+                const challengeDoc = await getDoc(doc(db, 'settings', 'weeklyChallenge'));
+                const challengeText = challengeDoc.exists() && challengeDoc.data().text 
+                    ? challengeDoc.data().text 
+                    : "No challenge set yet. Check back soon!";
+                
+                document.getElementById('challengeText').textContent = challengeText;
+                
+                if (isAdmin) {
+                    document.getElementById('editChallengeBtn').style.display = 'inline-block';
+                }
+            } catch (error) {
+                console.error('Load challenge error:', error);
+                document.getElementById('challengeText').textContent = "Error loading challenge";
+            }
+        }
+
+        // Edit challenge (admin only)
+        window.editChallenge = async function() {
+            if (!isAdmin) return;
+
+            const currentText = document.getElementById('challengeText').textContent;
+            const newText = prompt("Enter this week's challenge:", currentText);
+            
+            if (newText === null) return; // Cancelled
+            
+            try {
+                await setDoc(doc(db, 'settings', 'weeklyChallenge'), {
+                    text: newText,
+                    updatedBy: currentUser.email,
+                    updatedAt: new Date().toISOString()
+                });
+                
+                document.getElementById('challengeText').textContent = newText;
+                alert('Challenge updated!');
+            } catch (error) {
+                console.error('Update challenge error:', error);
+                alert('Failed to update challenge: ' + error.message);
+            }
+        };
+
+        // Load messages
+        async function loadMessages() {
+            try {
+                const q = query(collection(db, 'messages'), orderBy('timestamp', 'desc'));
+                const querySnapshot = await getDocs(q);
+                
+                const messagesContainer = document.getElementById('messagesContainer');
+                
+                if (querySnapshot.empty) {
+                    messagesContainer.innerHTML = '<p style="text-align: center; padding: 30px; color: #999;">No messages yet. Be the first to post!</p>';
+                    return;
+                }
+
+                let html = '';
+                querySnapshot.forEach((doc) => {
+                    const msg = doc.data();
+                    const messageId = doc.id;
+                    const date = new Date(msg.timestamp);
+                    const timeAgo = getTimeAgo(date);
+                    
+                    const teamBadge = msg.team && msg.team !== 'none'
+                        ? `<span class="team-badge team-${msg.team}">${msg.team.toUpperCase()}</span>`
+                        : '';
+                    
+                    const deleteBtn = isAdmin 
+                        ? `<button class="delete-message-btn" onclick="deleteMessage('${messageId}')">Delete</button>`
+                        : '';
+                    
+                    html += `
+                        <div class="message-item">
+                            <div class="message-header">
+                                <div>
+                                    <span class="message-author">${msg.userName}</span>
+                                    ${teamBadge}
+                                </div>
+                                <div>
+                                    <span class="message-timestamp">${timeAgo}</span>
+                                    ${deleteBtn}
+                                </div>
+                            </div>
+                            <div class="message-text">${escapeHtml(msg.text)}</div>
+                        </div>
+                    `;
+                });
+                
+                messagesContainer.innerHTML = html;
+            } catch (error) {
+                console.error('Load messages error:', error);
+                document.getElementById('messagesContainer').innerHTML = 
+                    '<p style="text-align: center; padding: 30px; color: #ff6b6b;">Error loading messages</p>';
+            }
+        }
+
+        // Post message
+        window.postMessage = async function() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            
+            if (!text) {
+                alert('Please enter a message!');
+                return;
+            }
+            
+            if (text.length > 500) {
+                alert('Message too long! Keep it under 500 characters.');
+                return;
+            }
+            
+            const btn = document.getElementById('postMessageBtn');
+            btn.disabled = true;
+            btn.textContent = 'Posting...';
+            
+            try {
+                await addDoc(collection(db, 'messages'), {
+                    text: text,
+                    userName: currentUser.name,
+                    userId: currentUser.uid,
+                    team: currentUser.team || 'none',
+                    timestamp: new Date().toISOString()
+                });
+                
+                input.value = '';
+                document.getElementById('charCounter').textContent = '0 / 500';
+                loadMessages();
+            } catch (error) {
+                console.error('Post message error:', error);
+                alert('Failed to post message: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '📤 Post Message';
+            }
+        };
+
+        // Delete message (admin only)
+        window.deleteMessage = async function(messageId) {
+            if (!isAdmin) return;
+            
+            if (!confirm('Delete this message?')) return;
+            
+            try {
+                await deleteDoc(doc(db, 'messages', messageId));
+                loadMessages();
+            } catch (error) {
+                console.error('Delete message error:', error);
+                alert('Failed to delete message');
+            }
+        };
+
+        // Character counter
+        document.addEventListener('DOMContentLoaded', function() {
+            const messageInput = document.getElementById('messageInput');
+            if (messageInput) {
+                messageInput.addEventListener('input', function() {
+                    const counter = document.getElementById('charCounter');
+                    const length = this.value.length;
+                    counter.textContent = `${length} / 500`;
+                    counter.classList.toggle('warning', length > 450);
+                });
+            }
+        });
+
+        // Helper: Time ago
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            if (seconds < 60) return 'Just now';
+            if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
+            if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
+            if (seconds < 604800) return Math.floor(seconds / 86400) + 'd ago';
+            
+            return date.toLocaleDateString();
+        }
+
+        // Helper: Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
         // Initialize
         updateTotalScore();
     </script>
