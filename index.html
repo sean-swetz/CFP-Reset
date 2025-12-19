@@ -1328,7 +1328,10 @@
         const db = getFirestore(app);
 
         // ADMIN EMAIL - Change this to YOUR email address
-        const ADMIN_EMAIL = "seanswetz@pm.me";
+        const ADMIN_EMAILS = [
+            "seanswetz@pm.me", 
+            "hayley.ciarrocchi@gmail.com",
+            ]
 
         let currentUser = null;
         let isAdmin = false;
@@ -1342,7 +1345,7 @@
                 const userDoc = await getDoc(doc(db, 'users', user.uid));
                 if (userDoc.exists()) {
                     currentUser = { uid: user.uid, email: user.email, ...userDoc.data() };
-                    isAdmin = user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+                    isAdmin = user.email.toLowerCase() === ADMIN_EMAILS.toLowerCase();
                     showApp();
                 }
             } else {
