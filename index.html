@@ -552,6 +552,90 @@
             margin-top: 5px;
         }
 
+        .captain-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            background: gold;
+            color: #333;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+
+        .team-detail-section {
+            margin-bottom: 40px;
+        }
+
+        .team-header {
+            padding: 20px;
+            border-radius: 15px;
+            color: white;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .team-header h3 {
+            font-size: 2em;
+            margin: 0;
+        }
+
+        .team-total {
+            text-align: right;
+        }
+
+        .team-total .label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .team-total .points {
+            font-size: 2em;
+            font-weight: 700;
+        }
+
+        .team-members-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .member-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid;
+        }
+
+        .member-card.current-user {
+            background: #e8f5e9;
+            border-left-width: 6px;
+        }
+
+        .member-name {
+            font-weight: 700;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .member-points {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #4facfe;
+        }
+
+        .no-team-section {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #ffc107;
+            margin-bottom: 20px;
+        }
+
         @media (max-width: 600px) {
             h1 {
                 font-size: 1.8em;
@@ -668,6 +752,7 @@
         <div class="nav-buttons">
             <button class="nav-btn active" onclick="showSection('checkin')">Check In</button>
             <button class="nav-btn" onclick="showSection('leaderboard')">Leaderboard</button>
+            <button class="nav-btn" onclick="showSection('teams')">Teams</button>
             <button class="nav-btn admin" id="adminNavBtn" onclick="showSection('admin')" style="display: none;">Admin</button>
         </div>
 
@@ -938,6 +1023,17 @@
             </div>
         </div>
 
+        <!-- Teams Page -->
+        <div id="teams" class="section">
+            <div class="card">
+                <h2>👥 Team Rosters</h2>
+                <p style="color: #666; margin-bottom: 30px;">View all team members, captains, and individual scores</p>
+                <div id="teamsContent">
+                    <p style="text-align: center; padding: 30px;">Loading teams...</p>
+                </div>
+            </div>
+        </div>
+
         <!-- Admin Section -->
         <div id="admin" class="section">
             <div class="card">
@@ -1025,7 +1121,7 @@
 
         // REPLACE THESE WITH YOUR FIREBASE CONFIG
         const firebaseConfig = {
-            apiKey: "AIzaSyDbvV8uX5OnPRJChm6Q58ca7lyvHg2jqRo",
+           apiKey: "AIzaSyDbvV8uX5OnPRJChm6Q58ca7lyvHg2jqRo",
   authDomain: "reset-2026-tracker.firebaseapp.com",
   projectId: "reset-2026-tracker",
   storageBucket: "reset-2026-tracker.firebasestorage.app",
@@ -1136,6 +1232,7 @@
                     email: email,
                     totalPoints: 0,
                     team: 'none',
+                    isCaptain: false,
                     hiddenFromLeaderboard: false,
                     registeredAt: new Date().toISOString()
                 });
@@ -1236,6 +1333,8 @@
 
             if (sectionName === 'leaderboard') {
                 loadLeaderboard();
+            } else if (sectionName === 'teams') {
+                loadTeamsPage();
             } else if (sectionName === 'admin' && isAdmin) {
                 loadAdminData();
             }
@@ -1464,9 +1563,13 @@
                         ? `<span class="team-badge team-${user.team}">${user.team.toUpperCase()}</span>`
                         : '<span style="color: #999; font-size: 0.9em;">No Team</span>';
                     
+                    const captainBadge = user.isCaptain 
+                        ? '<span class="captain-badge">⭐ CAPTAIN</span>'
+                        : '';
+                    
                     userItem.innerHTML = `
                         <div class="user-info">
-                            <strong>${user.name}</strong> ${teamBadge}<br>
+                            <strong>${user.name}</strong> ${teamBadge} ${captainBadge}<br>
                             <small>${user.email} • ${user.totalPoints || 0} points</small>
                         </div>
                         <div class="user-actions">
@@ -1481,6 +1584,11 @@
                                 <option value="pink" ${user.team === 'pink' ? 'selected' : ''}>🩷 Pink</option>
                                 <option value="teal" ${user.team === 'teal' ? 'selected' : ''}>🩵 Teal</option>
                             </select>
+                            <button class="small-btn ${user.isCaptain ? 'btn-show' : 'btn-secondary'}" 
+                                    onclick="window.toggleCaptain('${user.uid}', ${!user.isCaptain})"
+                                    style="${user.isCaptain ? 'background: gold; color: #333;' : ''}">
+                                ${user.isCaptain ? '⭐ Captain' : 'Make Captain'}
+                            </button>
                             ${user.hiddenFromLeaderboard 
                                 ? `<button class="small-btn btn-show" onclick="window.toggleUserVisibility('${user.uid}', false)">Show</button>`
                                 : `<button class="small-btn btn-hide" onclick="window.toggleUserVisibility('${user.uid}', true)">Hide</button>`
@@ -1526,6 +1634,150 @@
                 alert('Failed to assign team');
             }
         };
+
+        window.toggleCaptain = async function(userId, makeCaptain) {
+            if (!isAdmin) return;
+
+            try {
+                const userRef = doc(db, 'users', userId);
+                await updateDoc(userRef, {
+                    isCaptain: makeCaptain
+                });
+                loadAdminData();
+                loadTeamsPage();
+            } catch (error) {
+                console.error('Toggle captain error:', error);
+                alert('Failed to update captain status');
+            }
+        };
+
+        // Load Teams Page
+        async function loadTeamsPage() {
+            const teamsContent = document.getElementById('teamsContent');
+            teamsContent.innerHTML = '<p style="text-align: center; padding: 30px;">Loading teams...</p>';
+
+            try {
+                const q = query(collection(db, 'users'));
+                const querySnapshot = await getDocs(q);
+                
+                const teamGroups = {
+                    red: [], blue: [], green: [], yellow: [],
+                    purple: [], orange: [], pink: [], teal: [], none: []
+                };
+
+                querySnapshot.forEach((doc) => {
+                    const userData = doc.data();
+                    if (!userData.hiddenFromLeaderboard) {
+                        const team = userData.team || 'none';
+                        teamGroups[team].push({ uid: doc.id, ...userData });
+                    }
+                });
+
+                // Sort each team by points
+                Object.keys(teamGroups).forEach(team => {
+                    teamGroups[team].sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
+                });
+
+                let html = '';
+
+                // Show teams with members (sorted by total points)
+                const teamColors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'teal'];
+                const teamsWithMembers = teamColors
+                    .map(color => ({
+                        color,
+                        members: teamGroups[color],
+                        totalPoints: teamGroups[color].reduce((sum, m) => sum + (m.totalPoints || 0), 0)
+                    }))
+                    .filter(t => t.members.length > 0)
+                    .sort((a, b) => b.totalPoints - a.totalPoints);
+
+                teamsWithMembers.forEach(({ color, members, totalPoints }) => {
+                    const captain = members.find(m => m.isCaptain);
+                    
+                    html += `
+                        <div class="team-detail-section">
+                            <div class="team-header team-${color}">
+                                <div>
+                                    <h3>${color.toUpperCase()} TEAM</h3>
+                                    ${captain ? `<div style="font-size: 0.9em; margin-top: 5px;">⭐ Captain: ${captain.name}</div>` : ''}
+                                </div>
+                                <div class="team-total">
+                                    <div class="label">${members.length} member${members.length !== 1 ? 's' : ''}</div>
+                                    <div class="points">${totalPoints} pts</div>
+                                </div>
+                            </div>
+                            <div class="team-members-grid">
+                                ${members.map(member => {
+                                    const isCurrentUser = currentUser && member.uid === currentUser.uid;
+                                    return `
+                                        <div class="member-card ${isCurrentUser ? 'current-user' : ''}" style="border-left-color: var(--team-${color});">
+                                            <div class="member-name">
+                                                ${member.name}
+                                                ${member.isCaptain ? '<span class="captain-badge">⭐ CAPTAIN</span>' : ''}
+                                                ${isCurrentUser ? ' <span style="color: #7ed957;">(You)</span>' : ''}
+                                            </div>
+                                            <div class="member-points">${member.totalPoints || 0} pts</div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                // Show unassigned members if any
+                if (teamGroups.none.length > 0) {
+                    html += `
+                        <div class="no-team-section">
+                            <h3 style="color: #856404; margin-bottom: 15px;">⚠️ Unassigned Members (${teamGroups.none.length})</h3>
+                            <div class="team-members-grid">
+                                ${teamGroups.none.map(member => {
+                                    const isCurrentUser = currentUser && member.uid === currentUser.uid;
+                                    return `
+                                        <div class="member-card ${isCurrentUser ? 'current-user' : ''}" style="border-left-color: #ffc107;">
+                                            <div class="member-name">
+                                                ${member.name}
+                                                ${isCurrentUser ? ' <span style="color: #7ed957;">(You)</span>' : ''}
+                                            </div>
+                                            <div class="member-points">${member.totalPoints || 0} pts</div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                if (teamsWithMembers.length === 0 && teamGroups.none.length === 0) {
+                    html = '<p style="text-align: center; padding: 50px; color: #999;">No teams or members yet!</p>';
+                }
+
+                teamsContent.innerHTML = html;
+
+                // Add CSS variables for team colors
+                const style = document.createElement('style');
+                style.textContent = `
+                    :root {
+                        --team-red: #ff6b6b;
+                        --team-blue: #4facfe;
+                        --team-green: #7ed957;
+                        --team-yellow: #ffd93d;
+                        --team-purple: #a55eea;
+                        --team-orange: #ff9f43;
+                        --team-pink: #fd79a8;
+                        --team-teal: #00d2d3;
+                    }
+                `;
+                if (!document.getElementById('team-colors')) {
+                    style.id = 'team-colors';
+                    document.head.appendChild(style);
+                }
+
+            } catch (error) {
+                console.error('Load teams error:', error);
+                teamsContent.innerHTML = '<p style="text-align: center; padding: 30px; color: #ff6b6b;">Error loading teams</p>';
+            }
+        }
 
         window.exportTeamData = async function(teamColor) {
             if (!isAdmin) return;
