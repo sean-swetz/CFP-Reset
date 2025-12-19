@@ -1314,7 +1314,7 @@
 
         // REPLACE THESE WITH YOUR FIREBASE CONFIG
         const firebaseConfig = {
-              apiKey: "AIzaSyDbvV8uX5OnPRJChm6Q58ca7lyvHg2jqRo",
+            apiKey: "AIzaSyDbvV8uX5OnPRJChm6Q58ca7lyvHg2jqRo",
   authDomain: "reset-2026-tracker.firebaseapp.com",
   projectId: "reset-2026-tracker",
   storageBucket: "reset-2026-tracker.firebasestorage.app",
@@ -1328,10 +1328,7 @@
         const db = getFirestore(app);
 
         // ADMIN EMAIL - Change this to YOUR email address
-        const ADMIN_EMAILS = [
-            "seanswetz@pm.me", 
-            "hayley.ciarrocchi@gmail.com"
-            ];
+        const ADMIN_EMAIL = "seanswetz@pm.me";
 
         let currentUser = null;
         let isAdmin = false;
@@ -1345,7 +1342,7 @@
                 const userDoc = await getDoc(doc(db, 'users', user.uid));
                 if (userDoc.exists()) {
                     currentUser = { uid: user.uid, email: user.email, ...userDoc.data() };
-                    isAdmin = user.email.toLowerCase() === ADMIN_EMAILS.toLowerCase();
+                    isAdmin = user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
                     showApp();
                 }
             } else {
@@ -1920,20 +1917,40 @@
         };
 
         window.updateTeamName = async function(color, name) {
-            if (!isAdmin) return;
+            if (!isAdmin) {
+                console.error('Not admin - cannot update team names');
+                return;
+            }
+
+            console.log('Attempting to update team name:', color, name);
 
             try {
                 const teamNamesRef = doc(db, 'settings', 'teamNames');
-                const teamNamesDoc = await getDoc(teamNamesRef);
+                
+                // Try to get existing document first
+                let teamNamesDoc;
+                try {
+                    teamNamesDoc = await getDoc(teamNamesRef);
+                } catch (getError) {
+                    console.error('Error getting team names doc:', getError);
+                    alert('Error accessing team names: ' + getError.message);
+                    return;
+                }
                 
                 const currentNames = teamNamesDoc.exists() ? teamNamesDoc.data() : {};
                 currentNames[color] = name || null;
 
+                console.log('Saving team names:', currentNames);
+                
                 await setDoc(teamNamesRef, currentNames);
+                console.log('Team name saved successfully!');
+                
                 loadTeamsPage();
             } catch (error) {
                 console.error('Update team name error:', error);
-                alert('Failed to update team name');
+                console.error('Error code:', error.code);
+                console.error('Error message:', error.message);
+                alert('Failed to update team name: ' + error.code + ' - ' + error.message);
             }
         };
 
