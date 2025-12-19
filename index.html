@@ -569,6 +569,7 @@
 
         .team-header {
             padding: 20px;
+            padding-right: 60px;
             border-radius: 15px;
             color: white;
             margin-bottom: 0;
@@ -602,17 +603,17 @@
         }
 
         .team-members-container {
-            max-height: 2000px;
+            max-height: 0;
             overflow: hidden;
             transition: max-height 0.4s ease-out, opacity 0.3s, padding 0.3s;
-            opacity: 1;
-            padding-top: 20px;
-        }
-
-        .team-members-container.collapsed {
-            max-height: 0;
             opacity: 0;
             padding-top: 0;
+        }
+
+        .team-members-container.expanded {
+            max-height: 2000px;
+            opacity: 1;
+            padding-top: 20px;
         }
 
         .team-name-input {
@@ -693,6 +694,57 @@
             border-radius: 10px;
             border-left: 4px solid #ffc107;
             margin-bottom: 20px;
+        }
+
+        .checkin-closed-banner {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .checkin-closed-banner strong {
+            display: block;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .checkin-open-banner {
+            background: linear-gradient(135deg, #7ed957 0%, #5cb85c 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .window-control {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .window-status {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            margin-left: 10px;
+        }
+
+        .window-status.open {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .window-status.closed {
+            background: #f8d7da;
+            color: #721c24;
         }
 
         @media (max-width: 600px) {
@@ -819,6 +871,10 @@
         <div id="checkin" class="section active">
             <div class="card">
                 <h2>Weekly Check-In</h2>
+                
+                <!-- Check-in window status banner -->
+                <div id="checkinWindowBanner"></div>
+                
                 <div class="success-message" id="checkinSuccess"></div>
                 <form id="checkinForm">
                     <h3 style="color: #7ed957; margin: 30px 0 15px 0;">💪 Earn Points</h3>
@@ -1116,6 +1172,28 @@
                     </div>
                 </div>
 
+                <div class="window-control">
+                    <h3 style="margin-bottom: 15px;">⏰ Check-In Window Control</h3>
+                    <p style="color: #666; margin-bottom: 15px;">
+                        Control when members can submit their weekly check-ins. When closed, members will see a message and cannot check in.
+                    </p>
+                    <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                        <span style="font-weight: 600;">Current Status:</span>
+                        <span class="window-status" id="windowStatus">Loading...</span>
+                    </div>
+                    <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn btn-secondary" onclick="window.toggleCheckinWindow(true)" style="flex: 1; min-width: 150px; background: linear-gradient(135deg, #7ed957 0%, #5cb85c 100%);">
+                            ✅ Open Check-Ins
+                        </button>
+                        <button class="btn btn-danger" onclick="window.toggleCheckinWindow(false)" style="flex: 1; min-width: 150px;">
+                            🚫 Close Check-Ins
+                        </button>
+                    </div>
+                    <p style="margin-top: 15px; font-size: 0.9em; color: #666;">
+                        💡 Tip: Close check-ins on Sunday night and reopen them Monday morning for the new week!
+                    </p>
+                </div>
+
                 <div class="export-section">
                     <h3>Export Data</h3>
                     <p style="margin-bottom: 15px; color: #666;">Download all user and check-in data as CSV files for analysis.</p>
@@ -1219,7 +1297,7 @@
 
         // REPLACE THESE WITH YOUR FIREBASE CONFIG
         const firebaseConfig = {
-         apiKey: "AIzaSyDbvV8uX5OnPRJChm6Q58ca7lyvHg2jqRo",
+              apiKey: "AIzaSyDbvV8uX5OnPRJChm6Q58ca7lyvHg2jqRo",
   authDomain: "reset-2026-tracker.firebaseapp.com",
   projectId: "reset-2026-tracker",
   storageBucket: "reset-2026-tracker.firebasestorage.app",
@@ -1264,6 +1342,7 @@
                 document.getElementById('adminNavBtn').style.display = 'block';
             }
             
+            checkCheckinWindow();
             loadLeaderboard();
         }
 
@@ -1622,6 +1701,58 @@
 
         window.loadLeaderboard = loadLeaderboard;
 
+        // Check-in window control
+        async function checkCheckinWindow() {
+            try {
+                const windowDoc = await getDoc(doc(db, 'settings', 'checkinWindow'));
+                const isOpen = windowDoc.exists() ? windowDoc.data().isOpen !== false : true;
+                
+                const banner = document.getElementById('checkinWindowBanner');
+                const form = document.getElementById('checkinForm');
+                const submitBtn = document.getElementById('checkinBtn');
+                
+                if (!isOpen) {
+                    banner.innerHTML = `
+                        <div class="checkin-closed-banner">
+                            <strong>🚫 Check-In Window is Currently Closed</strong>
+                            Check back later or contact your gym administrator.
+                        </div>
+                    `;
+                    form.style.opacity = '0.5';
+                    form.style.pointerEvents = 'none';
+                    submitBtn.disabled = true;
+                } else {
+                    banner.innerHTML = `
+                        <div class="checkin-open-banner">
+                            ✅ Check-in window is open! Submit your weekly progress below.
+                        </div>
+                    `;
+                    form.style.opacity = '1';
+                    form.style.pointerEvents = 'auto';
+                    submitBtn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Check window error:', error);
+            }
+        }
+
+        window.toggleCheckinWindow = async function(open) {
+            if (!isAdmin) return;
+
+            try {
+                await setDoc(doc(db, 'settings', 'checkinWindow'), {
+                    isOpen: open,
+                    lastUpdated: new Date().toISOString()
+                });
+                loadAdminData();
+                checkCheckinWindow();
+                alert(open ? 'Check-in window opened!' : 'Check-in window closed!');
+            } catch (error) {
+                console.error('Toggle window error:', error);
+                alert('Failed to update check-in window');
+            }
+        };
+
         // Admin Functions
         async function loadAdminData() {
             if (!isAdmin) return;
@@ -1641,6 +1772,13 @@
                 document.getElementById('totalUsers').textContent = totalUsers;
                 document.getElementById('totalCheckins').textContent = totalCheckins;
                 document.getElementById('visibleUsers').textContent = visibleUsers;
+
+                // Load check-in window status
+                const windowDoc = await getDoc(doc(db, 'settings', 'checkinWindow'));
+                const isOpen = windowDoc.exists() ? windowDoc.data().isOpen !== false : true;
+                const statusEl = document.getElementById('windowStatus');
+                statusEl.textContent = isOpen ? 'OPEN' : 'CLOSED';
+                statusEl.className = 'window-status ' + (isOpen ? 'open' : 'closed');
 
                 // Load team names
                 const teamNamesDoc = await getDoc(doc(db, 'settings', 'teamNames'));
@@ -1829,7 +1967,7 @@
                     
                     html += `
                         <div class="team-detail-section">
-                            <div class="team-header team-${color}" onclick="toggleTeamAccordion(this)">
+                            <div class="team-header team-${color} collapsed" onclick="toggleTeamAccordion(this)">
                                 <div>
                                     <span class="team-color-label">🎨 ${color}</span>
                                     <h3>${name}</h3>
@@ -1919,7 +2057,7 @@
         window.toggleTeamAccordion = function(header) {
             header.classList.toggle('collapsed');
             const container = header.nextElementSibling;
-            container.classList.toggle('collapsed');
+            container.classList.toggle('expanded');
         };
 
         window.exportTeamData = async function(teamColor) {
