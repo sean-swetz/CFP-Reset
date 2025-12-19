@@ -862,7 +862,7 @@
 
         <div class="nav-buttons">
             <button class="nav-btn active" onclick="showSection('checkin')">Check In</button>
-            <button class="nav-btn" onclick="showSection('leaderboard')">Leaderboard</button>
+            <button class="nav-btn" onclick="showSection('leaderboard')">The Whiteboard</button>
             <button class="nav-btn" onclick="showSection('teams')">Teams</button>
             <button class="nav-btn admin" id="adminNavBtn" onclick="showSection('admin')" style="display: none;">Admin</button>
         </div>
@@ -1111,7 +1111,7 @@
         <!-- Leaderboard Section -->
         <div id="leaderboard" class="section">
             <div class="card">
-                <h2>🏆 Leaderboard</h2>
+                <h2>🏆 The Whiteboard</h2>
                 
                 <!-- Team Standings -->
                 <div id="teamStandings" style="margin-bottom: 30px;">
@@ -1311,7 +1311,7 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore, doc, setDoc, getDoc, collection, query, orderBy, where, getDocs, updateDoc, increment, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-
+        import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
         // REPLACE THESE WITH YOUR FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyDbvV8uX5OnPRJChm6Q58ca7lyvHg2jqRo",
@@ -1326,6 +1326,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const storage = getStorage(app);
 
         // ADMIN EMAIL - Change this to YOUR email address
         const ADMIN_EMAIL = "seanswetz@pm.me";
