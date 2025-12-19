@@ -571,12 +571,71 @@
             padding: 20px;
             border-radius: 15px;
             color: white;
-            margin-bottom: 20px;
+            margin-bottom: 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .team-header:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .team-header::after {
+            content: '▼';
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2em;
+            transition: transform 0.3s;
+        }
+
+        .team-header.collapsed::after {
+            transform: translateY(-50%) rotate(-90deg);
+        }
+
+        .team-members-container {
+            max-height: 2000px;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out, opacity 0.3s, padding 0.3s;
+            opacity: 1;
+            padding-top: 20px;
+        }
+
+        .team-members-container.collapsed {
+            max-height: 0;
+            opacity: 0;
+            padding-top: 0;
+        }
+
+        .team-name-input {
+            background: rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1em;
+            margin-left: 10px;
+            width: 200px;
+        }
+
+        .team-name-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .team-color-label {
+            font-size: 0.8em;
+            opacity: 0.8;
+            display: block;
+            margin-bottom: 5px;
         }
 
         .team-header h3 {
@@ -1071,6 +1130,45 @@
                 </div>
 
                 <div style="margin-top: 30px;">
+                    <h3>Customize Team Names</h3>
+                    <p style="margin-bottom: 15px; color: #666;">Give each team a custom name while keeping their colors!</p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-bottom: 30px;">
+                        <div style="background: #ff6b6b; padding: 15px; border-radius: 10px; color: white;">
+                            <strong>🔴 Red Team</strong>
+                            <input type="text" class="team-name-input" id="teamName_red" placeholder="e.g., Red Warriors" onchange="window.updateTeamName('red', this.value)">
+                        </div>
+                        <div style="background: #4facfe; padding: 15px; border-radius: 10px; color: white;">
+                            <strong>🔵 Blue Team</strong>
+                            <input type="text" class="team-name-input" id="teamName_blue" placeholder="e.g., Blue Legends" onchange="window.updateTeamName('blue', this.value)">
+                        </div>
+                        <div style="background: #7ed957; padding: 15px; border-radius: 10px; color: white;">
+                            <strong>🟢 Green Team</strong>
+                            <input type="text" class="team-name-input" id="teamName_green" placeholder="e.g., Green Machines" onchange="window.updateTeamName('green', this.value)">
+                        </div>
+                        <div style="background: #ffd93d; padding: 15px; border-radius: 10px; color: #333;">
+                            <strong>🟡 Yellow Team</strong>
+                            <input type="text" class="team-name-input" id="teamName_yellow" placeholder="e.g., Yellow Thunder" onchange="window.updateTeamName('yellow', this.value)" style="color: #333; background: rgba(255,255,255,0.8);">
+                        </div>
+                        <div style="background: #a55eea; padding: 15px; border-radius: 10px; color: white;">
+                            <strong>🟣 Purple Team</strong>
+                            <input type="text" class="team-name-input" id="teamName_purple" placeholder="e.g., Purple Reign" onchange="window.updateTeamName('purple', this.value)">
+                        </div>
+                        <div style="background: #ff9f43; padding: 15px; border-radius: 10px; color: white;">
+                            <strong>🟠 Orange Team</strong>
+                            <input type="text" class="team-name-input" id="teamName_orange" placeholder="e.g., Orange Crush" onchange="window.updateTeamName('orange', this.value)">
+                        </div>
+                        <div style="background: #fd79a8; padding: 15px; border-radius: 10px; color: white;">
+                            <strong>🩷 Pink Team</strong>
+                            <input type="text" class="team-name-input" id="teamName_pink" placeholder="e.g., Pink Panthers" onchange="window.updateTeamName('pink', this.value)">
+                        </div>
+                        <div style="background: #00d2d3; padding: 15px; border-radius: 10px; color: white;">
+                            <strong>🩵 Teal Team</strong>
+                            <input type="text" class="team-name-input" id="teamName_teal" placeholder="e.g., Teal Titans" onchange="window.updateTeamName('teal', this.value)">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px;">
                     <h3>Manage User Teams & Visibility</h3>
                     <p style="margin-bottom: 15px; color: #666;">Assign users to colored teams and control leaderboard visibility.</p>
                     <div class="user-list" id="adminUserList">
@@ -1121,7 +1219,7 @@
 
         // REPLACE THESE WITH YOUR FIREBASE CONFIG
         const firebaseConfig = {
-           apiKey: "AIzaSyDbvV8uX5OnPRJChm6Q58ca7lyvHg2jqRo",
+         apiKey: "AIzaSyDbvV8uX5OnPRJChm6Q58ca7lyvHg2jqRo",
   authDomain: "reset-2026-tracker.firebaseapp.com",
   projectId: "reset-2026-tracker",
   storageBucket: "reset-2026-tracker.firebasestorage.app",
@@ -1544,6 +1642,18 @@
                 document.getElementById('totalCheckins').textContent = totalCheckins;
                 document.getElementById('visibleUsers').textContent = visibleUsers;
 
+                // Load team names
+                const teamNamesDoc = await getDoc(doc(db, 'settings', 'teamNames'));
+                if (teamNamesDoc.exists()) {
+                    const teamNames = teamNamesDoc.data();
+                    ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'teal'].forEach(color => {
+                        const input = document.getElementById(`teamName_${color}`);
+                        if (input && teamNames[color]) {
+                            input.value = teamNames[color];
+                        }
+                    });
+                }
+
                 // Load user list
                 const userList = document.getElementById('adminUserList');
                 userList.innerHTML = '';
@@ -1651,6 +1761,24 @@
             }
         };
 
+        window.updateTeamName = async function(color, name) {
+            if (!isAdmin) return;
+
+            try {
+                const teamNamesRef = doc(db, 'settings', 'teamNames');
+                const teamNamesDoc = await getDoc(teamNamesRef);
+                
+                const currentNames = teamNamesDoc.exists() ? teamNamesDoc.data() : {};
+                currentNames[color] = name || null;
+
+                await setDoc(teamNamesRef, currentNames);
+                loadTeamsPage();
+            } catch (error) {
+                console.error('Update team name error:', error);
+                alert('Failed to update team name');
+            }
+        };
+
         // Load Teams Page
         async function loadTeamsPage() {
             const teamsContent = document.getElementById('teamsContent');
@@ -1659,6 +1787,10 @@
             try {
                 const q = query(collection(db, 'users'));
                 const querySnapshot = await getDocs(q);
+                
+                // Get custom team names
+                const teamNamesDoc = await getDoc(doc(db, 'settings', 'teamNames'));
+                const teamNames = teamNamesDoc.exists() ? teamNamesDoc.data() : {};
                 
                 const teamGroups = {
                     red: [], blue: [], green: [], yellow: [],
@@ -1685,20 +1817,22 @@
                 const teamsWithMembers = teamColors
                     .map(color => ({
                         color,
+                        name: teamNames[color] || `${color.toUpperCase()} TEAM`,
                         members: teamGroups[color],
                         totalPoints: teamGroups[color].reduce((sum, m) => sum + (m.totalPoints || 0), 0)
                     }))
                     .filter(t => t.members.length > 0)
                     .sort((a, b) => b.totalPoints - a.totalPoints);
 
-                teamsWithMembers.forEach(({ color, members, totalPoints }) => {
+                teamsWithMembers.forEach(({ color, name, members, totalPoints }) => {
                     const captain = members.find(m => m.isCaptain);
                     
                     html += `
                         <div class="team-detail-section">
-                            <div class="team-header team-${color}">
+                            <div class="team-header team-${color}" onclick="toggleTeamAccordion(this)">
                                 <div>
-                                    <h3>${color.toUpperCase()} TEAM</h3>
+                                    <span class="team-color-label">🎨 ${color}</span>
+                                    <h3>${name}</h3>
                                     ${captain ? `<div style="font-size: 0.9em; margin-top: 5px;">⭐ Captain: ${captain.name}</div>` : ''}
                                 </div>
                                 <div class="team-total">
@@ -1706,20 +1840,22 @@
                                     <div class="points">${totalPoints} pts</div>
                                 </div>
                             </div>
-                            <div class="team-members-grid">
-                                ${members.map(member => {
-                                    const isCurrentUser = currentUser && member.uid === currentUser.uid;
-                                    return `
-                                        <div class="member-card ${isCurrentUser ? 'current-user' : ''}" style="border-left-color: var(--team-${color});">
-                                            <div class="member-name">
-                                                ${member.name}
-                                                ${member.isCaptain ? '<span class="captain-badge">⭐ CAPTAIN</span>' : ''}
-                                                ${isCurrentUser ? ' <span style="color: #7ed957;">(You)</span>' : ''}
+                            <div class="team-members-container">
+                                <div class="team-members-grid">
+                                    ${members.map(member => {
+                                        const isCurrentUser = currentUser && member.uid === currentUser.uid;
+                                        return `
+                                            <div class="member-card ${isCurrentUser ? 'current-user' : ''}" style="border-left-color: var(--team-${color});">
+                                                <div class="member-name">
+                                                    ${member.name}
+                                                    ${member.isCaptain ? '<span class="captain-badge">⭐ CAPTAIN</span>' : ''}
+                                                    ${isCurrentUser ? ' <span style="color: #7ed957;">(You)</span>' : ''}
+                                                </div>
+                                                <div class="member-points">${member.totalPoints || 0} pts</div>
                                             </div>
-                                            <div class="member-points">${member.totalPoints || 0} pts</div>
-                                        </div>
-                                    `;
-                                }).join('')}
+                                        `;
+                                    }).join('')}
+                                </div>
                             </div>
                         </div>
                     `;
@@ -1778,6 +1914,13 @@
                 teamsContent.innerHTML = '<p style="text-align: center; padding: 30px; color: #ff6b6b;">Error loading teams</p>';
             }
         }
+
+        // Toggle team accordion
+        window.toggleTeamAccordion = function(header) {
+            header.classList.toggle('collapsed');
+            const container = header.nextElementSibling;
+            container.classList.toggle('collapsed');
+        };
 
         window.exportTeamData = async function(teamColor) {
             if (!isAdmin) return;
