@@ -1374,7 +1374,7 @@
                         <button class="photo-upload-btn" onclick="document.getElementById('photoUpload').click()">
                             📷 Upload Photo
                         </button>
-                        <p style="color: #666; font-size: 0.9em; margin-top: 10px;">Max 2MB • JPG, PNG, or GIF</p>
+                        <p style="color: #666; font-size: 0.9em; margin-top: 10px;">Max 5MB • JPG, PNG, or GIF</p>
                     </div>
                 </div>
 
@@ -2768,48 +2768,121 @@ querySnapshot.forEach((doc) => {
             }
         };
 
-        // Upload profile photo
-        window.uploadProfilePhoto = async function() {
-            const fileInput = document.getElementById('photoUpload');
-            const file = fileInput.files[0];
+        // Upload profile photo with compression
+window.uploadProfilePhoto = async function() {
+    const fileInput = document.getElementById('photoUpload');
+    const file = fileInput.files[0];
+    
+    if (!file) return;
+    
+    // Check file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+        alert('Photo too large! Please use an image under 5MB.');
+        return;
+    }
+    
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+        alert('Please upload an image file (JPG, PNG, or GIF)');
+        return;
+    }
+    
+    try {
+        // Show loading state
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = 'Uploading...';
+        btn.disabled = true;
+        
+        // Compress image if it's large
+        let fileToUpload = file;
+        if (file.size > 500 * 1024) { // If larger than 500KB, compress
+            fileToUpload = await compressImage(file);
+        }
+        
+        // Upload to Firebase Storage
+        const storageRef = ref(storage, `profile-photos/${currentUser.uid}`);
+        await uploadBytes(storageRef, fileToUpload);
+        
+        // Get download URL
+        const photoURL = await getDownloadURL(storageRef);
+        
+        // Update user document
+        await updateDoc(doc(db, 'users', currentUser.uid), {
+            photoURL: photoURL
+        });
+        
+        // Update display
+        document.getElementById('profilePhotoDisplay').src = photoURL;
+        currentUser.photoURL = photoURL;
+        
+        alert('Photo uploaded! 📸');
+        
+        // Reset button
+        btn.textContent = originalText;
+        btn.disabled = false;
+    } catch (error) {
+        console.error('Upload photo error:', error);
+        alert('Failed to upload photo: ' + error.message);
+        // Reset button
+        event.target.textContent = '📷 Upload Photo';
+        event.target.disabled = false;
+    }
+};
+
+// Compress image function
+async function compressImage(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
             
-            if (!file) return;
+            img.onload = () => {
+                // Create canvas
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Calculate new dimensions (max 800px width/height)
+                let width = img.width;
+                let height = img.height;
+                const maxDimension = 800;
+                
+                if (width > height && width > maxDimension) {
+                    height = (height * maxDimension) / width;
+                    width = maxDimension;
+                } else if (height > maxDimension) {
+                    width = (width * maxDimension) / height;
+                    height = maxDimension;
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                
+                // Draw compressed image
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // Convert to blob with quality reduction
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        resolve(new File([blob], file.name, {
+                            type: 'image/jpeg',
+                            lastModified: Date.now()
+                        }));
+                    } else {
+                        reject(new Error('Compression failed'));
+                    }
+                }, 'image/jpeg', 0.8); // 80% quality
+            };
             
-            // Check file size (2MB limit)
-            if (file.size > 2 * 1024 * 1024) {
-                alert('Photo too large! Please use an image under 2MB.');
-                return;
-            }
-            
-            // Check file type
-            if (!file.type.startsWith('image/')) {
-                alert('Please upload an image file (JPG, PNG, or GIF)');
-                return;
-            }
-            
-            try {
-                // Upload to Firebase Storage
-                const storageRef = ref(storage, `profile-photos/${currentUser.uid}`);
-                await uploadBytes(storageRef, file);
-                
-                // Get download URL
-                const photoURL = await getDownloadURL(storageRef);
-                
-                // Update user document
-                await updateDoc(doc(db, 'users', currentUser.uid), {
-                    photoURL: photoURL
-                });
-                
-                // Update display
-                document.getElementById('profilePhotoDisplay').src = photoURL;
-                currentUser.photoURL = photoURL;
-                
-                alert('Photo uploaded! 📸');
-            } catch (error) {
-                console.error('Upload photo error:', error);
-                alert('Failed to upload photo: ' + error.message);
-            }
+            img.onerror = () => reject(new Error('Failed to load image'));
         };
+        
+        reader.onerror = () => reject(new Error('Failed to read file'));
+    });
+}
 
         // View another user's profile
         window.viewUserProfile = async function(userId) {
