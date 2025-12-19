@@ -898,6 +898,133 @@
 .char-counter.warning {
     color: #ff6b6b;
 }
+        /* Profile Styles */
+.profile-photo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #4facfe;
+    margin-right: 10px;
+}
+
+.profile-photo.large {
+    width: 120px;
+    height: 120px;
+    border: 4px solid #4facfe;
+}
+
+.profile-photo.small {
+    width: 30px;
+    height: 30px;
+    border: 2px solid #e0e0e0;
+}
+
+.profile-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.profile-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.profile-info-item {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.profile-info-item label {
+    display: block;
+    font-weight: 600;
+    color: #666;
+    font-size: 0.9em;
+    margin-bottom: 8px;
+}
+
+.profile-info-item .value {
+    font-size: 1.1em;
+    color: #333;
+    font-weight: 500;
+}
+
+.profile-edit-input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1em;
+}
+
+.photo-upload-btn {
+    background: #4facfe;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.photo-upload-btn:hover {
+    background: #3d8fd1;
+}
+
+.clickable-name {
+    cursor: pointer;
+    color: #4facfe;
+    text-decoration: none;
+}
+
+.clickable-name:hover {
+    text-decoration: underline;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    overflow: auto;
+}
+
+.modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-close {
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #999;
+}
+
+.modal-close:hover {
+    color: #333;
+}
     </style>
 </head>
 <body>
@@ -984,8 +1111,9 @@
             <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
 
-       <div class="nav-buttons">
+    <div class="nav-buttons">
     <button class="nav-btn active" onclick="showSection('checkin')">Check In</button>
+    <button class="nav-btn" onclick="showSection('profile')">My Profile</button>
     <button class="nav-btn" onclick="showSection('leaderboard')">The Whiteboard</button>
     <button class="nav-btn" onclick="showSection('teams')">Teams</button>
     <button class="nav-btn" onclick="showSection('locker')">The Locker Room</button>
@@ -1232,7 +1360,52 @@
                 </form>
             </div>
         </div>
+<!-- My Profile Section -->
+        <div id="profile" class="section">
+            <div class="card">
+                <h2>👤 My Profile</h2>
+                
+                <div class="profile-container">
+                    <img id="profilePhotoDisplay" class="profile-photo large" 
+                         src="https://ui-avatars.com/api/?name=User&background=4facfe&color=fff&size=120" 
+                         alt="Profile Photo">
+                    <div>
+                        <input type="file" id="photoUpload" accept="image/*" style="display: none;" onchange="uploadProfilePhoto()">
+                        <button class="photo-upload-btn" onclick="document.getElementById('photoUpload').click()">
+                            📷 Upload Photo
+                        </button>
+                        <p style="color: #666; font-size: 0.9em; margin-top: 10px;">Max 2MB • JPG, PNG, or GIF</p>
+                    </div>
+                </div>
 
+                <div class="profile-info-grid">
+                    <div class="profile-info-item">
+                        <label>Nickname</label>
+                        <input type="text" class="profile-edit-input" id="profileNickname" 
+                               placeholder="Your nickname" maxlength="30">
+                    </div>
+                    <div class="profile-info-item">
+                        <label>Favorite CrossFit Movement</label>
+                        <input type="text" class="profile-edit-input" id="profileMovement" 
+                               placeholder="e.g., Deadlift, Box Jumps" maxlength="50">
+                    </div>
+                    <div class="profile-info-item">
+                        <label>Favorite Veggie</label>
+                        <input type="text" class="profile-edit-input" id="profileVeggie" 
+                               placeholder="e.g., Broccoli, Carrots" maxlength="50">
+                    </div>
+                    <div class="profile-info-item">
+                        <label>#1 Goal This Challenge</label>
+                        <input type="text" class="profile-edit-input" id="profileGoal" 
+                               placeholder="e.g., Lose 10lbs, PR my deadlift" maxlength="100">
+                    </div>
+                </div>
+
+                <button class="btn" onclick="saveProfile()" style="margin-top: 30px;">
+                    💾 Save Profile
+                </button>
+            </div>
+        </div>
         <!-- Leaderboard Section -->
         <div id="leaderboard" class="section">
             <div class="card">
@@ -1461,6 +1634,15 @@
                     </button>
                 </div>
             </div>
+            <!-- Profile Modal -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeProfileModal()">&times;</span>
+            <div id="profileModalContent">
+                <!-- Profile content loads here -->
+            </div>
+        </div>
+    </div>
         </div>
     <!-- Firebase SDK -->
     <script type="module">
@@ -1683,16 +1865,18 @@
             document.getElementById(sectionName).classList.add('active');
             event.target.classList.add('active');
 
-            if (sectionName === 'leaderboard') {
-                loadLeaderboard();
-            } else if (sectionName === 'teams') {
-                loadTeamsPage();
-            } else if (sectionName === 'locker') {
-                loadWeeklyChallenge();
-                loadMessages();
-            } else if (sectionName === 'admin' && isAdmin) {
-                loadAdminData();
-            }
+           if (sectionName === 'leaderboard') {
+            loadLeaderboard();
+        } else if (sectionName === 'teams') {
+            loadTeamsPage();
+        } else if (sectionName === 'locker') {
+            loadWeeklyChallenge();
+            loadMessages();
+        } else if (sectionName === 'profile') {
+            loadUserProfile();
+        } else if (sectionName === 'admin' && isAdmin) {
+            loadAdminData();
+        }
         };
 
         // Calculate total score
@@ -2399,36 +2583,41 @@
                 }
 
                 let html = '';
-                querySnapshot.forEach((doc) => {
-                    const msg = doc.data();
-                    const messageId = doc.id;
-                    const date = new Date(msg.timestamp);
-                    const timeAgo = getTimeAgo(date);
-                    
-                    const teamBadge = msg.team && msg.team !== 'none'
-                        ? `<span class="team-badge team-${msg.team}">${msg.team.toUpperCase()}</span>`
-                        : '';
-                    
-                    const deleteBtn = isAdmin 
-                        ? `<button class="delete-message-btn" onclick="deleteMessage('${messageId}')">Delete</button>`
-                        : '';
-                    
-                    html += `
-                        <div class="message-item">
-                            <div class="message-header">
-                                <div>
-                                    <span class="message-author">${msg.userName}</span>
-                                    ${teamBadge}
-                                </div>
-                                <div>
-                                    <span class="message-timestamp">${timeAgo}</span>
-                                    ${deleteBtn}
-                                </div>
-                            </div>
-                            <div class="message-text">${escapeHtml(msg.text)}</div>
-                        </div>
-                    `;
-                });
+querySnapshot.forEach((doc) => {
+    const msg = doc.data();
+    const messageId = doc.id;
+    const date = new Date(msg.timestamp);
+    const timeAgo = getTimeAgo(date);
+    
+    // Get photo URL or default avatar
+    const photoURL = msg.photoURL || 
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(msg.userName)}&background=4facfe&color=fff&size=40`;
+    
+    const teamBadge = msg.team && msg.team !== 'none'
+        ? `<span class="team-badge team-${msg.team}">${msg.team.toUpperCase()}</span>`
+        : '';
+    
+    const deleteBtn = isAdmin 
+        ? `<button class="delete-message-btn" onclick="deleteMessage('${messageId}')">Delete</button>`
+        : '';
+    
+    html += `
+        <div class="message-item">
+            <div class="message-header">
+                <div style="display: flex; align-items: center;">
+                    <img src="${photoURL}" class="profile-photo small" alt="${msg.userName}">
+                    <span class="message-author clickable-name" onclick="viewUserProfile('${msg.userId}')">${msg.userName}</span>
+                    ${teamBadge}
+                </div>
+                <div>
+                    <span class="message-timestamp">${timeAgo}</span>
+                    ${deleteBtn}
+                </div>
+            </div>
+            <div class="message-text">${escapeHtml(msg.text)}</div>
+        </div>
+    `;
+});
                 
                 messagesContainer.innerHTML = html;
             } catch (error) {
@@ -2459,12 +2648,13 @@
             
             try {
                 await addDoc(collection(db, 'messages'), {
-                    text: text,
-                    userName: currentUser.name,
-                    userId: currentUser.uid,
-                    team: currentUser.team || 'none',
-                    timestamp: new Date().toISOString()
-                });
+                text: text,
+                userName: currentUser.name,
+                userId: currentUser.uid,
+                team: currentUser.team || 'none',
+                photoURL: currentUser.photoURL || null,
+                timestamp: new Date().toISOString()
+            });
                 
                 input.value = '';
                 document.getElementById('charCounter').textContent = '0 / 500';
@@ -2524,6 +2714,168 @@
             div.textContent = text;
             return div.innerHTML;
         }
+        // ===== PROFILE FUNCTIONS =====
+
+        // Load user profile
+        async function loadUserProfile() {
+            try {
+                const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    
+                    // Load profile fields
+                    document.getElementById('profileNickname').value = userData.nickname || '';
+                    document.getElementById('profileMovement').value = userData.favoriteMovement || '';
+                    document.getElementById('profileVeggie').value = userData.favoriteVeggie || '';
+                    document.getElementById('profileGoal').value = userData.challengeGoal || '';
+                    
+                    // Load profile photo
+                    if (userData.photoURL) {
+                        document.getElementById('profilePhotoDisplay').src = userData.photoURL;
+                    } else {
+                        const initials = currentUser.name.split(' ').map(n => n[0]).join('');
+                        document.getElementById('profilePhotoDisplay').src = 
+                            `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=4facfe&color=fff&size=120`;
+                    }
+                }
+            } catch (error) {
+                console.error('Load profile error:', error);
+            }
+        }
+
+        // Save profile
+        window.saveProfile = async function() {
+            const nickname = document.getElementById('profileNickname').value.trim();
+            const movement = document.getElementById('profileMovement').value.trim();
+            const veggie = document.getElementById('profileVeggie').value.trim();
+            const goal = document.getElementById('profileGoal').value.trim();
+            
+            try {
+                await updateDoc(doc(db, 'users', currentUser.uid), {
+                    nickname: nickname || null,
+                    favoriteMovement: movement || null,
+                    favoriteVeggie: veggie || null,
+                    challengeGoal: goal || null
+                });
+                
+                // Update current user object
+                currentUser.nickname = nickname;
+                
+                alert('Profile saved! ✅');
+            } catch (error) {
+                console.error('Save profile error:', error);
+                alert('Failed to save profile: ' + error.message);
+            }
+        };
+
+        // Upload profile photo
+        window.uploadProfilePhoto = async function() {
+            const fileInput = document.getElementById('photoUpload');
+            const file = fileInput.files[0];
+            
+            if (!file) return;
+            
+            // Check file size (2MB limit)
+            if (file.size > 2 * 1024 * 1024) {
+                alert('Photo too large! Please use an image under 2MB.');
+                return;
+            }
+            
+            // Check file type
+            if (!file.type.startsWith('image/')) {
+                alert('Please upload an image file (JPG, PNG, or GIF)');
+                return;
+            }
+            
+            try {
+                // Upload to Firebase Storage
+                const storageRef = ref(storage, `profile-photos/${currentUser.uid}`);
+                await uploadBytes(storageRef, file);
+                
+                // Get download URL
+                const photoURL = await getDownloadURL(storageRef);
+                
+                // Update user document
+                await updateDoc(doc(db, 'users', currentUser.uid), {
+                    photoURL: photoURL
+                });
+                
+                // Update display
+                document.getElementById('profilePhotoDisplay').src = photoURL;
+                currentUser.photoURL = photoURL;
+                
+                alert('Photo uploaded! 📸');
+            } catch (error) {
+                console.error('Upload photo error:', error);
+                alert('Failed to upload photo: ' + error.message);
+            }
+        };
+
+        // View another user's profile
+        window.viewUserProfile = async function(userId) {
+            try {
+                const userDoc = await getDoc(doc(db, 'users', userId));
+                if (!userDoc.exists()) {
+                    alert('User not found');
+                    return;
+                }
+                
+                const userData = userDoc.data();
+                const displayName = userData.nickname || userData.name;
+                const photoURL = userData.photoURL || 
+                    `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name)}&background=4facfe&color=fff&size=120`;
+                
+                const teamBadge = userData.team && userData.team !== 'none'
+                    ? `<span class="team-badge team-${userData.team}">${userData.team.toUpperCase()}</span>`
+                    : '';
+                
+                const modalContent = `
+                    <h2>${displayName} ${teamBadge}</h2>
+                    <div class="profile-container">
+                        <img src="${photoURL}" class="profile-photo large" alt="Profile Photo">
+                        <div>
+                            <p style="font-size: 1.2em; font-weight: 600;">${userData.name}</p>
+                            <p style="color: #666;">Total Points: <strong>${userData.totalPoints || 0}</strong></p>
+                        </div>
+                    </div>
+                    <div class="profile-info-grid">
+                        ${userData.favoriteMovement ? `
+                        <div class="profile-info-item">
+                            <label>Favorite Movement</label>
+                            <div class="value">${userData.favoriteMovement}</div>
+                        </div>` : ''}
+                        ${userData.favoriteVeggie ? `
+                        <div class="profile-info-item">
+                            <label>Favorite Veggie</label>
+                            <div class="value">${userData.favoriteVeggie}</div>
+                        </div>` : ''}
+                        ${userData.challengeGoal ? `
+                        <div class="profile-info-item">
+                            <label>#1 Goal</label>
+                            <div class="value">${userData.challengeGoal}</div>
+                        </div>` : ''}
+                    </div>
+                `;
+                
+                document.getElementById('profileModalContent').innerHTML = modalContent;
+                document.getElementById('profileModal').classList.add('active');
+            } catch (error) {
+                console.error('View profile error:', error);
+                alert('Failed to load profile');
+            }
+        };
+
+        window.closeProfileModal = function() {
+            document.getElementById('profileModal').classList.remove('active');
+        };
+
+        // Close modal on outside click
+        window.onclick = function(event) {
+            const modal = document.getElementById('profileModal');
+            if (event.target === modal) {
+                closeProfileModal();
+            }
+        };
         // Initialize
         updateTotalScore();
     </script>
