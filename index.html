@@ -1109,6 +1109,81 @@
     gap: 10px;
     margin-top: 20px;
 }
+        /* Point Adjustment Styles */
+.point-adjustment-section {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.adjustment-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.adjustment-input {
+    padding: 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1em;
+}
+
+.adjustment-history {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 20px;
+}
+
+.adjustment-item {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border-left: 4px solid #4facfe;
+}
+
+.adjustment-item.positive {
+    border-left-color: #7ed957;
+}
+
+.adjustment-item.negative {
+    border-left-color: #ff6b6b;
+}
+
+/* Promote Admin Button */
+.promote-admin-btn {
+    background: linear-gradient(135deg, #ffd93d 0%, #f5c542 100%);
+    color: #333;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.9em;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.admin-badge {
+    background: gold;
+    color: #333;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 700;
+    margin-left: 8px;
+}
+
+/* Clickable profile elements */
+.profile-clickable {
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.profile-clickable:hover {
+    opacity: 0.8;
+}
     </style>
 </head>
 <body>
@@ -1627,6 +1702,30 @@ Examples:
                     <p style="margin-top: 15px; font-size: 0.9em; color: #666;">
                         💡 Tip: Close check-ins on Sunday night and reopen them Monday morning for the new week!
                     </p>
+                </div>
+                <div class="point-adjustment-section">
+                    <h3 style="margin-bottom: 15px;">🔧 Manual Point Adjustment</h3>
+                    <p style="color: #666; margin-bottom: 15px;">Add or subtract points with a reason (e.g., forgot to log something, bonus achievement)</p>
+                    
+                    <div class="adjustment-form">
+                        <select id="adjustmentUser" class="adjustment-input">
+                            <option value="">Select User...</option>
+                        </select>
+                        <input type="number" id="adjustmentPoints" class="adjustment-input" 
+                               placeholder="Points (+10 or -5)" step="1">
+                        <input type="text" id="adjustmentReason" class="adjustment-input" 
+                               placeholder="Reason (e.g., Forgot Monday protein)" 
+                               style="grid-column: 1 / -1;">
+                    </div>
+                    
+                    <button class="btn btn-secondary" onclick="applyPointAdjustment()">
+                        ✅ Apply Adjustment
+                    </button>
+
+                    <div class="adjustment-history" id="adjustmentHistory">
+                        <h4 style="margin-bottom: 10px;">Recent Adjustments</h4>
+                        <p style="color: #999; text-align: center; padding: 20px;">No adjustments yet</p>
+                    </div>
                 </div>
 
                 <div class="export-section">
@@ -2289,6 +2388,10 @@ Examples:
                             input.value = teamNames[color];
                         }
                     });
+
+                    // Load adjustment tools
+                loadAdjustmentUsers();
+                loadAdjustmentHistory();
                 }
 
                 // Load user list
@@ -2310,38 +2413,47 @@ Examples:
                         ? `<span class="team-badge team-${user.team}">${user.team.toUpperCase()}</span>`
                         : '<span style="color: #999; font-size: 0.9em;">No Team</span>';
                     
-                    const captainBadge = user.isCaptain 
-                        ? '<span class="captain-badge">⭐ CAPTAIN</span>'
-                        : '';
-                    
-                    userItem.innerHTML = `
-                        <div class="user-info">
-                            <strong>${user.name}</strong> ${teamBadge} ${captainBadge}<br>
-                            <small>${user.email} • ${user.totalPoints || 0} points</small>
-                        </div>
-                        <div class="user-actions">
-                            <select class="team-select" onchange="window.assignTeam('${user.uid}', this.value)">
-                                <option value="none" ${(!user.team || user.team === 'none') ? 'selected' : ''}>No Team</option>
-                                <option value="red" ${user.team === 'red' ? 'selected' : ''}>🔴 Red</option>
-                                <option value="blue" ${user.team === 'blue' ? 'selected' : ''}>🔵 Blue</option>
-                                <option value="green" ${user.team === 'green' ? 'selected' : ''}>🟢 Green</option>
-                                <option value="yellow" ${user.team === 'yellow' ? 'selected' : ''}>🟡 Yellow</option>
-                                <option value="purple" ${user.team === 'purple' ? 'selected' : ''}>🟣 Purple</option>
-                                <option value="orange" ${user.team === 'orange' ? 'selected' : ''}>🟠 Orange</option>
-                                <option value="pink" ${user.team === 'pink' ? 'selected' : ''}>🩷 Pink</option>
-                                <option value="teal" ${user.team === 'teal' ? 'selected' : ''}>🩵 Teal</option>
-                            </select>
-                            <button class="small-btn ${user.isCaptain ? 'btn-show' : 'btn-secondary'}" 
-                                    onclick="window.toggleCaptain('${user.uid}', ${!user.isCaptain})"
-                                    style="${user.isCaptain ? 'background: gold; color: #333;' : ''}">
-                                ${user.isCaptain ? '⭐ Captain' : 'Make Captain'}
-                            </button>
-                            ${user.hiddenFromLeaderboard 
-                                ? `<button class="small-btn btn-show" onclick="window.toggleUserVisibility('${user.uid}', false)">Show</button>`
-                                : `<button class="small-btn btn-hide" onclick="window.toggleUserVisibility('${user.uid}', true)">Hide</button>`
-                            }
-                        </div>
-                    `;
+                   const captainBadge = user.isCaptain 
+    ? '<span class="captain-badge">⭐ CAPTAIN</span>'
+    : '';
+
+const adminBadge = ADMIN_EMAILS.includes(user.email.toLowerCase())
+    ? '<span class="admin-badge">👑 ADMIN</span>'
+    : '';
+
+const promoteBtn = !ADMIN_EMAILS.includes(user.email.toLowerCase())
+    ? `<button class="promote-admin-btn" onclick="window.promoteToAdmin('${user.email}', '${user.name}')">👑 Make Admin</button>`
+    : '';
+
+userItem.innerHTML = `
+    <div class="user-info">
+        <strong>${user.name}</strong> ${teamBadge} ${captainBadge} ${adminBadge}<br>
+        <small>${user.email} • ${user.totalPoints || 0} points</small>
+    </div>
+    <div class="user-actions">
+        <select class="team-select" onchange="window.assignTeam('${user.uid}', this.value)">
+            <option value="none" ${(!user.team || user.team === 'none') ? 'selected' : ''}>No Team</option>
+            <option value="red" ${user.team === 'red' ? 'selected' : ''}>🔴 Red</option>
+            <option value="blue" ${user.team === 'blue' ? 'selected' : ''}>🔵 Blue</option>
+            <option value="green" ${user.team === 'green' ? 'selected' : ''}>🟢 Green</option>
+            <option value="yellow" ${user.team === 'yellow' ? 'selected' : ''}>🟡 Yellow</option>
+            <option value="purple" ${user.team === 'purple' ? 'selected' : ''}>🟣 Purple</option>
+            <option value="orange" ${user.team === 'orange' ? 'selected' : ''}>🟠 Orange</option>
+            <option value="pink" ${user.team === 'pink' ? 'selected' : ''}>🩷 Pink</option>
+            <option value="teal" ${user.team === 'teal' ? 'selected' : ''}>🩵 Teal</option>
+        </select>
+        <button class="small-btn ${user.isCaptain ? 'btn-show' : 'btn-secondary'}" 
+                onclick="window.toggleCaptain('${user.uid}', ${!user.isCaptain})"
+                style="${user.isCaptain ? 'background: gold; color: #333;' : ''}">
+            ${user.isCaptain ? '⭐ Captain' : 'Make Captain'}
+        </button>
+        ${promoteBtn}
+        ${user.hiddenFromLeaderboard 
+            ? `<button class="small-btn btn-show" onclick="window.toggleUserVisibility('${user.uid}', false)">Show</button>`
+            : `<button class="small-btn btn-hide" onclick="window.toggleUserVisibility('${user.uid}', true)">Hide</button>`
+        }
+    </div>
+`;
                     userList.appendChild(userItem);
                 });
 
@@ -2499,19 +2611,27 @@ Examples:
                             </div>
                             <div class="team-members-container">
                                 <div class="team-members-grid">
-                                    ${members.map(member => {
-                                        const isCurrentUser = currentUser && member.uid === currentUser.uid;
-                                        return `
-                                            <div class="member-card ${isCurrentUser ? 'current-user' : ''}" style="border-left-color: var(--team-${color});">
-                                                <div class="member-name">
-                                                    ${member.name}
-                                                    ${member.isCaptain ? '<span class="captain-badge">⭐ CAPTAIN</span>' : ''}
-                                                    ${isCurrentUser ? ' <span style="color: #7ed957;">(You)</span>' : ''}
-                                                </div>
-                                                <div class="member-points">${member.totalPoints || 0} pts</div>
-                                            </div>
-                                        `;
-                                    }).join('')}
+                                   ${members.map(member => {
+    const isCurrentUser = currentUser && member.uid === currentUser.uid;
+    const photoURL = member.photoURL || 
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=4facfe&color=fff&size=60`;
+    
+    return `
+        <div class="member-card ${isCurrentUser ? 'current-user' : ''} profile-clickable" 
+             style="border-left-color: var(--team-${color});"
+             onclick="viewUserProfile('${member.uid}')">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <img src="${photoURL}" class="profile-photo" alt="${member.name}">
+                <div class="member-name">
+                    ${member.name}
+                    ${member.isCaptain ? '<span class="captain-badge">⭐ CAPTAIN</span>' : ''}
+                    ${isCurrentUser ? ' <span style="color: #7ed957;">(You)</span>' : ''}
+                </div>
+            </div>
+            <div class="member-points">${member.totalPoints || 0} pts</div>
+        </div>
+    `;
+}).join('')}
                                 </div>
                             </div>
                         </div>
@@ -3168,6 +3288,178 @@ async function compressImage(file) {
             if (event.target === modal) {
                 closeProfileModal();
             }
+        };
+        // ===== ADMIN TOOLS =====
+
+        // Load users into adjustment dropdown
+        async function loadAdjustmentUsers() {
+            if (!isAdmin) return;
+            
+            try {
+                const usersQuery = query(collection(db, 'users'));
+                const usersSnapshot = await getDocs(usersQuery);
+                
+                const select = document.getElementById('adjustmentUser');
+                select.innerHTML = '<option value="">Select User...</option>';
+                
+                const users = [];
+                usersSnapshot.forEach((doc) => {
+                    users.push({ uid: doc.id, ...doc.data() });
+                });
+                
+                users.sort((a, b) => a.name.localeCompare(b.name));
+                
+                users.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.uid;
+                    option.textContent = `${user.name} (${user.totalPoints || 0} pts)`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Load adjustment users error:', error);
+            }
+        }
+
+        // Apply point adjustment
+        window.applyPointAdjustment = async function() {
+            if (!isAdmin) return;
+            
+            const userId = document.getElementById('adjustmentUser').value;
+            const points = parseInt(document.getElementById('adjustmentPoints').value);
+            const reason = document.getElementById('adjustmentReason').value.trim();
+            
+            if (!userId) {
+                alert('Please select a user');
+                return;
+            }
+            
+            if (isNaN(points) || points === 0) {
+                alert('Please enter a point value (positive or negative)');
+                return;
+            }
+            
+            if (!reason) {
+                alert('Please enter a reason for the adjustment');
+                return;
+            }
+            
+            try {
+                // Update user points
+                const userRef = doc(db, 'users', userId);
+                await updateDoc(userRef, {
+                    totalPoints: increment(points)
+                });
+                
+                // Log the adjustment
+                await addDoc(collection(db, 'pointAdjustments'), {
+                    userId: userId,
+                    points: points,
+                    reason: reason,
+                    adjustedBy: currentUser.email,
+                    timestamp: new Date().toISOString()
+                });
+                
+                // Clear form
+                document.getElementById('adjustmentUser').value = '';
+                document.getElementById('adjustmentPoints').value = '';
+                document.getElementById('adjustmentReason').value = '';
+                
+                alert(`${points > 0 ? 'Added' : 'Subtracted'} ${Math.abs(points)} points!`);
+                
+                loadAdjustmentHistory();
+                loadAdjustmentUsers(); // Refresh point totals
+                loadLeaderboard(); // Refresh leaderboard
+            } catch (error) {
+                console.error('Point adjustment error:', error);
+                alert('Failed to adjust points: ' + error.message);
+            }
+        };
+
+        // Load adjustment history
+        async function loadAdjustmentHistory() {
+            if (!isAdmin) return;
+            
+            try {
+                const q = query(collection(db, 'pointAdjustments'), orderBy('timestamp', 'desc'));
+                const querySnapshot = await getDocs(q);
+                
+                const historyDiv = document.getElementById('adjustmentHistory');
+                
+                if (querySnapshot.empty) {
+                    historyDiv.innerHTML = '<h4 style="margin-bottom: 10px;">Recent Adjustments</h4><p style="color: #999; text-align: center; padding: 20px;">No adjustments yet</p>';
+                    return;
+                }
+                
+                let html = '<h4 style="margin-bottom: 10px;">Recent Adjustments</h4>';
+                
+                // Get user names
+                const userNames = {};
+                for (const adjustDoc of querySnapshot.docs) {
+                    const adj = adjustDoc.data();
+                    if (!userNames[adj.userId]) {
+                        const userDoc = await getDoc(doc(db, 'users', adj.userId));
+                        if (userDoc.exists()) {
+                            userNames[adj.userId] = userDoc.data().name;
+                        }
+                    }
+                }
+                
+                querySnapshot.forEach((adjustDoc) => {
+                    const adj = adjustDoc.data();
+                    const date = new Date(adj.timestamp);
+                    const timeAgo = getTimeAgo(date);
+                    const userName = userNames[adj.userId] || 'Unknown User';
+                    const pointsClass = adj.points > 0 ? 'positive' : 'negative';
+                    const pointsSign = adj.points > 0 ? '+' : '';
+                    
+                    html += `
+                        <div class="adjustment-item ${pointsClass}">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <strong>${userName}</strong>
+                                <strong style="color: ${adj.points > 0 ? '#7ed957' : '#ff6b6b'};">
+                                    ${pointsSign}${adj.points} pts
+                                </strong>
+                            </div>
+                            <div style="color: #666; font-size: 0.95em;">${adj.reason}</div>
+                            <div style="color: #999; font-size: 0.85em; margin-top: 5px;">
+                                ${timeAgo} • by ${adj.adjustedBy}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                historyDiv.innerHTML = html;
+            } catch (error) {
+                console.error('Load adjustment history error:', error);
+            }
+        }
+
+        // Promote to admin
+        window.promoteToAdmin = async function(email, name) {
+            if (!isAdmin) return;
+            
+            const confirmed = confirm(
+                `Promote ${name} (${email}) to admin?\n\n` +
+                `This will give them:\n` +
+                `• Access to admin panel\n` +
+                `• Ability to edit teams & captains\n` +
+                `• Ability to adjust points\n` +
+                `• Ability to manage check-in window\n\n` +
+                `You'll need to add their email to Firebase rules manually.`
+            );
+            
+            if (!confirmed) return;
+            
+            // Show instructions
+            alert(
+                `To complete the promotion:\n\n` +
+                `1. Go to Firebase Console\n` +
+                `2. Firestore Database → Rules\n` +
+                `3. Find the isAdmin() function\n` +
+                `4. Add this email to the list:\n   '${email}'\n` +
+                `5. Click Publish\n\n` +
+                `Then ${name} will see the Admin tab when they log in!`
+            );
         };
         // Initialize
         updateTotalScore();
