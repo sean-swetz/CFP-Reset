@@ -2270,8 +2270,9 @@ async function loadLeaderboard() {
             
             // Add click handler to the row
             row.onclick = function() {
-                viewUserProfile(member.uid);
-            };
+    console.log('Clicked user:', member.uid, member.name);
+    viewUserProfile(member.uid);
+};
             
             row.innerHTML = `
                 <td><span class="rank ${rankClass}">${index + 1}</span></td>
