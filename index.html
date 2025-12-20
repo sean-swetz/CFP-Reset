@@ -3607,6 +3607,32 @@ window.demoteFromAdmin = async function(email, name, userId) {
         alert('Failed to remove admin access: ' + error.message);
     }
 };
+        // Load admin users from database
+async function loadAdminUsers() {
+    try {
+        const adminQuery = query(collection(db, 'adminUsers'));
+        const adminSnapshot = await getDocs(adminQuery);
+        
+        // Keep original hardcoded admins
+        const hardcodedAdmins = ADMIN_EMAILS.slice();
+        ADMIN_EMAILS.length = 0;
+        
+        // Add back hardcoded admins
+        hardcodedAdmins.forEach(email => ADMIN_EMAILS.push(email));
+        
+        // Add database admins
+        adminSnapshot.forEach((doc) => {
+            const adminData = doc.data();
+            if (!ADMIN_EMAILS.includes(adminData.email.toLowerCase())) {
+                ADMIN_EMAILS.push(adminData.email.toLowerCase());
+            }
+        });
+        
+        console.log('Loaded admin users:', ADMIN_EMAILS);
+    } catch (error) {
+        console.error('Load admin users error:', error);
+    }
+}
         // Initialize
         updateTotalScore();
     </script>
