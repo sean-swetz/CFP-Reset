@@ -1913,18 +1913,18 @@ Examples:
         document.getElementById('loading').style.display = 'none';
 
         // Check auth state
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const userDoc = await getDoc(doc(db, 'users', user.uid));
-                if (userDoc.exists()) {
-                    currentUser = { uid: user.uid, email: user.email, ...userDoc.data() };
-                    isAdmin = user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
-                    showApp();
-                }
-            } else {
-                showAuthPage();
-            }
-        });
+    onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+            currentUser = { uid: user.uid, email: user.email, ...userDoc.data() };
+            isAdmin = ADMIN_EMAILS.includes(user.email.toLowerCase());
+            showApp();
+        }
+    } else {
+        showAuthPage();
+    }
+});
 
         function showApp() {
             document.getElementById('authPage').style.display = 'none';
@@ -2351,116 +2351,119 @@ Examples:
             }
         };
 
-        // Admin Functions
-        async function loadAdminData() {
-            if (!isAdmin) return;
+// Admin Functions
+async function loadAdminData() {
+    if (!isAdmin) return;
 
-            try {
-                // Get all users
-                const usersQuery = query(collection(db, 'users'));
-                const usersSnapshot = await getDocs(usersQuery);
-                const totalUsers = usersSnapshot.size;
-                const visibleUsers = usersSnapshot.docs.filter(doc => !doc.data().hiddenFromLeaderboard).length;
+    try {
+        // Get all users
+        const usersQuery = query(collection(db, 'users'));
+        const usersSnapshot = await getDocs(usersQuery);
+        const totalUsers = usersSnapshot.size;
+        const visibleUsers = usersSnapshot.docs.filter(doc => !doc.data().hiddenFromLeaderboard).length;
 
-                // Get all check-ins
-                const checkinsQuery = query(collection(db, 'checkins'));
-                const checkinsSnapshot = await getDocs(checkinsQuery);
-                const totalCheckins = checkinsSnapshot.size;
+        // Get all check-ins
+        const checkinsQuery = query(collection(db, 'checkins'));
+        const checkinsSnapshot = await getDocs(checkinsQuery);
+        const totalCheckins = checkinsSnapshot.size;
 
-                document.getElementById('totalUsers').textContent = totalUsers;
-                document.getElementById('totalCheckins').textContent = totalCheckins;
-                document.getElementById('visibleUsers').textContent = visibleUsers;
+        document.getElementById('totalUsers').textContent = totalUsers;
+        document.getElementById('totalCheckins').textContent = totalCheckins;
+        document.getElementById('visibleUsers').textContent = visibleUsers;
 
-                // Load check-in window status
-                const windowDoc = await getDoc(doc(db, 'settings', 'checkinWindow'));
-                const isOpen = windowDoc.exists() ? windowDoc.data().isOpen !== false : true;
-                const statusEl = document.getElementById('windowStatus');
-                statusEl.textContent = isOpen ? 'OPEN' : 'CLOSED';
-                statusEl.className = 'window-status ' + (isOpen ? 'open' : 'closed');
+        // Load check-in window status
+        const windowDoc = await getDoc(doc(db, 'settings', 'checkinWindow'));
+        const isOpen = windowDoc.exists() ? windowDoc.data().isOpen !== false : true;
+        const statusEl = document.getElementById('windowStatus');
+        if (statusEl) {
+            statusEl.textContent = isOpen ? 'OPEN' : 'CLOSED';
+            statusEl.className = 'window-status ' + (isOpen ? 'open' : 'closed');
+        }
 
-                // Load team names
-                const teamNamesDoc = await getDoc(doc(db, 'settings', 'teamNames'));
-                if (teamNamesDoc.exists()) {
-                    const teamNames = teamNamesDoc.data();
-                    ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'teal'].forEach(color => {
-                        const input = document.getElementById(`teamName_${color}`);
-                        if (input && teamNames[color]) {
-                            input.value = teamNames[color];
-                        }
-                    });
-
-                    // Load adjustment tools
-                loadAdjustmentUsers();
-                loadAdjustmentHistory();
+        // Load team names
+        const teamNamesDoc = await getDoc(doc(db, 'settings', 'teamNames'));
+        if (teamNamesDoc.exists()) {
+            const teamNames = teamNamesDoc.data();
+            ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'teal'].forEach(color => {
+                const input = document.getElementById(`teamName_${color}`);
+                if (input && teamNames[color]) {
+                    input.value = teamNames[color];
                 }
-
-                // Load user list
-                const userList = document.getElementById('adminUserList');
-                userList.innerHTML = '';
-
-                const users = [];
-                usersSnapshot.forEach((doc) => {
-                    users.push({ uid: doc.id, ...doc.data() });
-                });
-
-                users.sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
-
-                users.forEach(user => {
-                    const userItem = document.createElement('div');
-                    userItem.className = 'user-item';
-                    
-                    const teamBadge = user.team && user.team !== 'none' 
-                        ? `<span class="team-badge team-${user.team}">${user.team.toUpperCase()}</span>`
-                        : '<span style="color: #999; font-size: 0.9em;">No Team</span>';
-                    
-                   const captainBadge = user.isCaptain 
-    ? '<span class="captain-badge">⭐ CAPTAIN</span>'
-    : '';
-
-const adminBadge = ADMIN_EMAILS.includes(user.email.toLowerCase())
-    ? '<span class="admin-badge">👑 ADMIN</span>'
-    : '';
-
-const promoteBtn = !ADMIN_EMAILS.includes(user.email.toLowerCase())
-    ? `<button class="promote-admin-btn" onclick="window.promoteToAdmin('${user.email}', '${user.name}')">👑 Make Admin</button>`
-    : '';
-
-userItem.innerHTML = `
-    <div class="user-info">
-        <strong>${user.name}</strong> ${teamBadge} ${captainBadge} ${adminBadge}<br>
-        <small>${user.email} • ${user.totalPoints || 0} points</small>
-    </div>
-    <div class="user-actions">
-        <select class="team-select" onchange="window.assignTeam('${user.uid}', this.value)">
-            <option value="none" ${(!user.team || user.team === 'none') ? 'selected' : ''}>No Team</option>
-            <option value="red" ${user.team === 'red' ? 'selected' : ''}>🔴 Red</option>
-            <option value="blue" ${user.team === 'blue' ? 'selected' : ''}>🔵 Blue</option>
-            <option value="green" ${user.team === 'green' ? 'selected' : ''}>🟢 Green</option>
-            <option value="yellow" ${user.team === 'yellow' ? 'selected' : ''}>🟡 Yellow</option>
-            <option value="purple" ${user.team === 'purple' ? 'selected' : ''}>🟣 Purple</option>
-            <option value="orange" ${user.team === 'orange' ? 'selected' : ''}>🟠 Orange</option>
-            <option value="pink" ${user.team === 'pink' ? 'selected' : ''}>🩷 Pink</option>
-            <option value="teal" ${user.team === 'teal' ? 'selected' : ''}>🩵 Teal</option>
-        </select>
-        <button class="small-btn ${user.isCaptain ? 'btn-show' : 'btn-secondary'}" 
-                onclick="window.toggleCaptain('${user.uid}', ${!user.isCaptain})"
-                style="${user.isCaptain ? 'background: gold; color: #333;' : ''}">
-            ${user.isCaptain ? '⭐ Captain' : 'Make Captain'}
-        </button>
-        ${promoteBtn}
-        ${user.hiddenFromLeaderboard 
-            ? `<button class="small-btn btn-show" onclick="window.toggleUserVisibility('${user.uid}', false)">Show</button>`
-            : `<button class="small-btn btn-hide" onclick="window.toggleUserVisibility('${user.uid}', true)">Hide</button>`
+            });
         }
-    </div>
-`;
-                    userList.appendChild(userItem);
-                });
 
-            } catch (error) {
-                console.error('Admin data error:', error);
-            }
-        }
+        // Load user list
+        const userList = document.getElementById('adminUserList');
+        userList.innerHTML = '';
+
+        const users = [];
+        usersSnapshot.forEach((doc) => {
+            users.push({ uid: doc.id, ...doc.data() });
+        });
+
+        users.sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
+
+        users.forEach(user => {
+            const userItem = document.createElement('div');
+            userItem.className = 'user-item';
+            
+            const teamBadge = user.team && user.team !== 'none' 
+                ? `<span class="team-badge team-${user.team}">${user.team.toUpperCase()}</span>`
+                : '<span style="color: #999; font-size: 0.9em;">No Team</span>';
+            
+            const captainBadge = user.isCaptain 
+                ? '<span class="captain-badge">⭐ CAPTAIN</span>'
+                : '';
+
+            const adminBadge = ADMIN_EMAILS.includes(user.email.toLowerCase())
+                ? '<span class="admin-badge">👑 ADMIN</span>'
+                : '';
+
+            const promoteBtn = !ADMIN_EMAILS.includes(user.email.toLowerCase())
+                ? `<button class="promote-admin-btn" onclick="window.promoteToAdmin('${user.email}', '${user.name}')">👑 Make Admin</button>`
+                : '';
+            
+            userItem.innerHTML = `
+                <div class="user-info">
+                    <strong>${user.name}</strong> ${teamBadge} ${captainBadge} ${adminBadge}<br>
+                    <small>${user.email} • ${user.totalPoints || 0} points</small>
+                </div>
+                <div class="user-actions">
+                    <select class="team-select" onchange="window.assignTeam('${user.uid}', this.value)">
+                        <option value="none" ${(!user.team || user.team === 'none') ? 'selected' : ''}>No Team</option>
+                        <option value="red" ${user.team === 'red' ? 'selected' : ''}>🔴 Red</option>
+                        <option value="blue" ${user.team === 'blue' ? 'selected' : ''}>🔵 Blue</option>
+                        <option value="green" ${user.team === 'green' ? 'selected' : ''}>🟢 Green</option>
+                        <option value="yellow" ${user.team === 'yellow' ? 'selected' : ''}>🟡 Yellow</option>
+                        <option value="purple" ${user.team === 'purple' ? 'selected' : ''}>🟣 Purple</option>
+                        <option value="orange" ${user.team === 'orange' ? 'selected' : ''}>🟠 Orange</option>
+                        <option value="pink" ${user.team === 'pink' ? 'selected' : ''}>🩷 Pink</option>
+                        <option value="teal" ${user.team === 'teal' ? 'selected' : ''}>🩵 Teal</option>
+                    </select>
+                    <button class="small-btn ${user.isCaptain ? 'btn-show' : 'btn-secondary'}" 
+                            onclick="window.toggleCaptain('${user.uid}', ${!user.isCaptain})"
+                            style="${user.isCaptain ? 'background: gold; color: #333;' : ''}">
+                        ${user.isCaptain ? '⭐ Captain' : 'Make Captain'}
+                    </button>
+                    ${promoteBtn}
+                    ${user.hiddenFromLeaderboard 
+                        ? `<button class="small-btn btn-show" onclick="window.toggleUserVisibility('${user.uid}', false)">Show</button>`
+                        : `<button class="small-btn btn-hide" onclick="window.toggleUserVisibility('${user.uid}', true)">Hide</button>`
+                    }
+                </div>
+            `;
+            userList.appendChild(userItem);
+        });
+
+        // Load adjustment tools
+        loadAdjustmentUsers();
+        loadAdjustmentHistory();
+
+    } catch (error) {
+        console.error('Admin data error:', error);
+        console.error('Error details:', error.message);
+    }
+}
 
         window.toggleUserVisibility = async function(userId, hide) {
             if (!isAdmin) return;
