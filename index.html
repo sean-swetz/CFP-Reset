@@ -3253,6 +3253,7 @@ async function compressImage(file) {
         window.viewUserProfile = async function(userId) {
             try {
                 const userDoc = await getDoc(doc(db, 'users', userId));
+                console.log('User doc exists:', userDoc.exists());
                 if (!userDoc.exists()) {
                     alert('User not found');
                     return;
