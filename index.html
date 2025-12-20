@@ -3298,6 +3298,7 @@ async function compressImage(file) {
                 
                 document.getElementById('profileModalContent').innerHTML = modalContent;
                 document.getElementById('profileModal').classList.add('active');
+                console.log('Modal should be visible now!');
             } catch (error) {
                 console.error('View profile error:', error);
                 alert('Failed to load profile');
