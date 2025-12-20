@@ -2436,17 +2436,17 @@ async function loadAdminData() {
                 ? '<span class="captain-badge">⭐ CAPTAIN</span>'
                 : '';
 
-            const adminBadge = ADMIN_EMAILS.includes(user.email.toLowerCase())
-                ? '<span class="admin-badge">👑 ADMIN</span>'
-                : '';
-
-            const promoteBtn = !ADMIN_EMAILS.includes(user.email.toLowerCase())
-                ? `<button class="promote-admin-btn" onclick="window.promoteToAdmin('${user.email}', '${user.name}')">👑 Make Admin</button>`
-                : '';
+        // Check if user is admin
+            const isUserAdmin = ADMIN_EMAILS.includes(user.email.toLowerCase());
             
+            const adminButtons = isUserAdmin
+                ? `<span class="admin-badge">👑 ADMIN</span>
+                   ${user.uid !== currentUser.uid ? `<button class="small-btn btn-danger" onclick="window.demoteFromAdmin('${user.email}', '${user.name}', '${user.uid}')">Remove Admin</button>` : ''}`
+                : `<button class="promote-admin-btn" onclick="window.promoteToAdmin('${user.email}', '${user.name}', '${user.uid}')">👑 Make Admin</button>`;
+                        
             userItem.innerHTML = `
                 <div class="user-info">
-                    <strong>${user.name}</strong> ${teamBadge} ${captainBadge} ${adminBadge}<br>
+                    <strong>${user.name}</strong> ${teamBadge} ${captainBadge} ${adminButtons}<br>
                     <small>${user.email} • ${user.totalPoints || 0} points</small>
                 </div>
                 <div class="user-actions">
@@ -2466,7 +2466,7 @@ async function loadAdminData() {
                             style="${user.isCaptain ? 'background: gold; color: #333;' : ''}">
                         ${user.isCaptain ? '⭐ Captain' : 'Make Captain'}
                     </button>
-                    ${promoteBtn}
+                    ${adminButtons}
                     ${user.hiddenFromLeaderboard 
                         ? `<button class="small-btn btn-show" onclick="window.toggleUserVisibility('${user.uid}', false)">Show</button>`
                         : `<button class="small-btn btn-hide" onclick="window.toggleUserVisibility('${user.uid}', true)">Hide</button>`
@@ -3458,33 +3458,82 @@ async function compressImage(file) {
             }
         }
 
-        // Promote to admin
-        window.promoteToAdmin = async function(email, name) {
-            if (!isAdmin) return;
-            
-            const confirmed = confirm(
-                `Promote ${name} (${email}) to admin?\n\n` +
-                `This will give them:\n` +
-                `• Access to admin panel\n` +
-                `• Ability to edit teams & captains\n` +
-                `• Ability to adjust points\n` +
-                `• Ability to manage check-in window\n\n` +
-                `You'll need to add their email to Firebase rules manually.`
-            );
-            
-            if (!confirmed) return;
-            
-            // Show instructions
-            alert(
-                `To complete the promotion:\n\n` +
-                `1. Go to Firebase Console\n` +
-                `2. Firestore Database → Rules\n` +
-                `3. Find the isAdmin() function\n` +
-                `4. Add this email to the list:\n   '${email}'\n` +
-                `5. Click Publish\n\n` +
-                `Then ${name} will see the Admin tab when they log in!`
-            );
-        };
+        // Promote to admin (automatic)
+window.promoteToAdmin = async function(email, name, userId) {
+    if (!isAdmin) return;
+    
+    const confirmed = confirm(
+        `Promote ${name} (${email}) to admin?\n\n` +
+        `This will give them:\n` +
+        `• Access to admin panel\n` +
+        `• Ability to edit teams & captains\n` +
+        `• Ability to adjust points\n` +
+        `• Ability to manage check-in window\n\n` +
+        `They will have admin access immediately!`
+    );
+    
+    if (!confirmed) return;
+    
+    try {
+        // Add to adminUsers collection
+        await setDoc(doc(db, 'adminUsers', userId), {
+            email: email,
+            name: name,
+            promotedBy: currentUser.email,
+            promotedAt: new Date().toISOString()
+        });
+        
+        // Add to ADMIN_EMAILS array in memory (for current session)
+        if (!ADMIN_EMAILS.includes(email.toLowerCase())) {
+            ADMIN_EMAILS.push(email.toLowerCase());
+        }
+        
+        // Reload admin data to show the admin badge
+        loadAdminData();
+        
+        alert(`✅ ${name} is now an admin!\n\nThey'll see the Admin tab next time they log in.`);
+    } catch (error) {
+        console.error('Promote to admin error:', error);
+        alert('Failed to promote to admin: ' + error.message);
+    }
+};
+
+// Demote from admin
+window.demoteFromAdmin = async function(email, name, userId) {
+    if (!isAdmin) return;
+    
+    // Don't let them demote themselves
+    if (userId === currentUser.uid) {
+        alert("You can't demote yourself!");
+        return;
+    }
+    
+    const confirmed = confirm(
+        `Remove admin access from ${name}?\n\n` +
+        `They will lose access to the admin panel.`
+    );
+    
+    if (!confirmed) return;
+    
+    try {
+        // Remove from adminUsers collection
+        await deleteDoc(doc(db, 'adminUsers', userId));
+        
+        // Remove from ADMIN_EMAILS array in memory
+        const index = ADMIN_EMAILS.indexOf(email.toLowerCase());
+        if (index > -1) {
+            ADMIN_EMAILS.splice(index, 1);
+        }
+        
+        // Reload admin data
+        loadAdminData();
+        
+        alert(`✅ ${name}'s admin access has been removed.`);
+    } catch (error) {
+        console.error('Demote from admin error:', error);
+        alert('Failed to remove admin access: ' + error.message);
+    }
+};
         // Initialize
         updateTotalScore();
     </script>
