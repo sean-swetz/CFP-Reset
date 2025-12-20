@@ -1987,6 +1987,10 @@ Examples:
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         if (userDoc.exists()) {
             currentUser = { uid: user.uid, email: user.email, ...userDoc.data() };
+            
+            // Load admin users from database
+            await loadAdminUsers();  // ← THIS LINE MUST BE HERE
+            
             isAdmin = ADMIN_EMAILS.includes(user.email.toLowerCase());
             showApp();
         }
