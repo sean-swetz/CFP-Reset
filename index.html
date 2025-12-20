@@ -1221,6 +1221,34 @@ input[type="number"]:focus {
     .nav-btn {
         width: 100%;
     }
+    /* Fix leaderboard table on mobile */
+    .leaderboard-table {
+        font-size: 0.85em;
+    }
+    
+    .leaderboard-table th,
+    .leaderboard-table td {
+        padding: 10px 5px;
+    }
+    
+    .profile-photo.small {
+        width: 25px;
+        height: 25px;
+    }
+    
+    .team-badge {
+        font-size: 0.7em;
+        padding: 3px 8px;
+    }
+    
+    .rank {
+        font-size: 1em;
+    }
+    
+    /* Make team leaderboard single column on mobile */
+    .team-leaderboard {
+        grid-template-columns: 1fr;
+    }
 }
         </style>
 </head>
