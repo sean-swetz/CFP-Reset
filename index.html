@@ -2202,42 +2202,120 @@ Examples:
             }
         });
 
-        // Load Leaderboard
-        async function loadLeaderboard() {
-            const tbody = document.getElementById('leaderboardBody');
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px;">Loading...</td></tr>';
+       // Load Leaderboard
+async function loadLeaderboard() {
+    const tbody = document.getElementById('leaderboardBody');
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px;">Loading...</td></tr>';
 
-            try {
-                // Fetch all users (no complex query to avoid indexing issues)
-                const q = query(collection(db, 'users'));
-                const querySnapshot = await getDocs(q);
+    try {
+        // Fetch all users (no complex query to avoid indexing issues)
+        const q = query(collection(db, 'users'));
+        const querySnapshot = await getDocs(q);
+        
+        const leaderboardData = [];
+        const teamTotals = {
+            red: { points: 0, members: 0 },
+            blue: { points: 0, members: 0 },
+            green: { points: 0, members: 0 },
+            yellow: { points: 0, members: 0 },
+            purple: { points: 0, members: 0 },
+            orange: { points: 0, members: 0 },
+            pink: { points: 0, members: 0 },
+            teal: { points: 0, members: 0 }
+        };
+
+        querySnapshot.forEach((doc) => {
+            const userData = doc.data();
+            // Only include users who aren't hidden from leaderboard
+            if (!userData.hiddenFromLeaderboard) {
+                leaderboardData.push({ uid: doc.id, ...userData });
                 
-                const leaderboardData = [];
-                const teamTotals = {
-                    red: { points: 0, members: 0 },
-                    blue: { points: 0, members: 0 },
-                    green: { points: 0, members: 0 },
-                    yellow: { points: 0, members: 0 },
-                    purple: { points: 0, members: 0 },
-                    orange: { points: 0, members: 0 },
-                    pink: { points: 0, members: 0 },
-                    teal: { points: 0, members: 0 }
-                };
+                // Calculate team totals
+                const team = userData.team || 'none';
+                if (teamTotals[team]) {
+                    teamTotals[team].points += (userData.totalPoints || 0);
+                    teamTotals[team].members += 1;
+                }
+            }
+        });
 
-                querySnapshot.forEach((doc) => {
-                    const userData = doc.data();
-                    // Only include users who aren't hidden from leaderboard
-                    if (!userData.hiddenFromLeaderboard) {
-                        leaderboardData.push({ uid: doc.id, ...userData });
-                        
-                        // Calculate team totals
-                        const team = userData.team || 'none';
-                        if (teamTotals[team]) {
-                            teamTotals[team].points += (userData.totalPoints || 0);
-                            teamTotals[team].members += 1;
-                        }
-                    }
-                });
+        // Sort by points (client-side)
+        leaderboardData.sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
+
+        // Display team standings
+        displayTeamStandings(teamTotals);
+
+        tbody.innerHTML = '';
+        if (leaderboardData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px; color: #999;">No check-ins yet. Be the first!</td></tr>';
+            return;
+        }
+
+        leaderboardData.forEach((member, index) => {
+            const row = tbody.insertRow();
+            const rankClass = index < 3 ? `rank-${index + 1}` : '';
+            const isCurrentUser = currentUser && member.uid === currentUser.uid;
+            const teamBadge = member.team && member.team !== 'none' 
+                ? `<span class="team-badge team-${member.team}">${member.team.toUpperCase()}</span>`
+                : '';
+            
+            // Get photo URL or default avatar
+            const photoURL = member.photoURL || 
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=4facfe&color=fff&size=40`;
+            
+            row.style.background = isCurrentUser ? '#e8f5e9' : '';
+            row.style.cursor = 'pointer';
+            row.classList.add('profile-clickable');
+            
+            // Add click handler to the row
+            row.onclick = function() {
+                viewUserProfile(member.uid);
+            };
+            
+            row.innerHTML = `
+                <td><span class="rank ${rankClass}">${index + 1}</span></td>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <img src="${photoURL}" class="profile-photo small" alt="${member.name}">
+                        <span>${member.name}${isCurrentUser ? ' (You)' : ''}</span>
+                    </div>
+                </td>
+                <td>${teamBadge || '<span style="color: #999;">No Team</span>'}</td>
+                <td><strong>${member.totalPoints || 0} pts</strong></td>
+            `;
+        });
+
+    } catch (error) {
+        console.error('Leaderboard error:', error);
+        console.error('Full error details:', error.message, error.code);
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 30px; color: #ff6b6b;">
+            Error loading leaderboard: ${error.message}<br><small>Check console for details</small>
+        </td></tr>`;
+    }
+}
+
+function displayTeamStandings(teamTotals) {
+    const teamLeaderboard = document.getElementById('teamLeaderboard');
+    
+    // Convert to array and sort by points
+    const teams = Object.entries(teamTotals)
+        .map(([name, data]) => ({ name, ...data }))
+        .filter(team => team.members > 0)
+        .sort((a, b) => b.points - a.points);
+
+    if (teams.length === 0) {
+        teamLeaderboard.innerHTML = '<p style="text-align: center; color: #999;">No teams assigned yet</p>';
+        return;
+    }
+
+    teamLeaderboard.innerHTML = teams.map(team => `
+        <div class="team-card team-${team.name}">
+            <h3>${team.name.toUpperCase()} TEAM</h3>
+            <div class="team-stat">${team.points} pts</div>
+            <div class="team-members">${team.members} member${team.members !== 1 ? 's' : ''}</div>
+        </div>
+    `).join('');
+}
 
                 // Sort by points (client-side)
                 leaderboardData.sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
