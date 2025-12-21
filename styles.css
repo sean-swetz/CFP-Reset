@@ -1302,3 +1302,63 @@ input[type="number"]:focus {
 .icon-btn:hover {
     background: rgba(0,0,0,0.1);
 }
+@media (max-width: 768px) {
+    /* Hide table on mobile */
+    .leaderboard-table {
+        display: none;
+    }
+    
+    /* Show mobile card view */
+    .leaderboard-mobile {
+        display: block !important;
+    }
+    
+    .leaderboard-card {
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .leaderboard-card.current-user {
+        background: #e8f5e9;
+        border-left: 4px solid #9BFB02;
+    }
+    
+    .rank-mobile {
+        font-size: 1.5em;
+        font-weight: 700;
+        min-width: 35px;
+        text-align: center;
+    }
+    
+    .rank-mobile.rank-1 { color: #FFD700; }
+    .rank-mobile.rank-2 { color: #C0C0C0; }
+    .rank-mobile.rank-3 { color: #CD7F32; }
+    
+    .user-info-mobile {
+        flex: 1;
+    }
+    
+    .user-name-mobile {
+        font-weight: 700;
+        font-size: 1.1em;
+        margin-bottom: 5px;
+    }
+    
+    .user-points-mobile {
+        font-size: 1.3em;
+        font-weight: 700;
+        color: #3146E7;
+        text-align: right;
+    }
+}
+
+/* Hide mobile view on desktop */
+.leaderboard-mobile {
+    display: none;
+}
