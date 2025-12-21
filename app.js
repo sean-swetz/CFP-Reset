@@ -364,7 +364,7 @@ document.getElementById('checkinForm').addEventListener('submit', async (e) => {
         successMsg.style.display = 'block';
         
         document.getElementById('checkinForm').reset();
-        updateTotalScore();
+        calculateDynamicScore();
 
         setTimeout(() => {
             successMsg.style.display = 'none';
