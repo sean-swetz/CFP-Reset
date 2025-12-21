@@ -446,41 +446,33 @@ async function loadLeaderboard() {
             `;
         });
         // After building the table, add mobile view
-const mobileContainer = document.createElement('div');
-mobileContainer.className = 'leaderboard-mobile';
-leaderboardData.forEach((member, index) => {
-    const rankClass = index < 3 ? `rank-${index + 1}` : '';
-    const isCurrentUser = currentUser && member.uid === currentUser.uid;
-    const teamBadge = member.team && member.team !== 'none' 
-        ? `<span class="team-badge team-${member.team}">${member.team.toUpperCase()}</span>`
-        : '';
-    
-    const photoURL = member.photoURL || 
-        `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=9BFB02&color=000&size=60`;
-    
-    const card = document.createElement('div');
-    card.className = `leaderboard-card ${isCurrentUser ? 'current-user' : ''} profile-clickable`;
-    card.onclick = () => viewUserProfile(member.uid);
-    
-    card.innerHTML = `
-        <div class="rank-mobile ${rankClass}">${index + 1}</div>
-        <img src="${photoURL}" class="profile-photo" alt="${member.name}">
-        <div class="user-info-mobile">
-            <div class="user-name-mobile">${member.name}${isCurrentUser ? ' (You)' : ''}</div>
-            ${teamBadge}
-        </div>
-        <div class="user-points-mobile">${member.totalPoints || 0}</div>
-    `;
-    
-    mobileContainer.appendChild(card);
-});
-
-// Insert mobile view in the card, after the table
-const leaderboardCard = tbody.closest('.card');
-if (leaderboardCard) {
-    leaderboardCard.appendChild(mobileContainer);
-}
-
+// Build mobile view
+        const mobileDiv = document.getElementById('leaderboardMobile');
+        if (mobileDiv) {
+            mobileDiv.innerHTML = '';
+            leaderboardData.forEach((member, index) => {
+                const rankClass = index < 3 ? `rank-${index + 1}` : '';
+                const isCurrentUser = currentUser && member.uid === currentUser.uid;
+                const teamBadge = member.team && member.team !== 'none' 
+                    ? `<span class="team-badge team-${member.team}">${member.team.toUpperCase()}</span>`
+                    : '';
+                
+                const photoURL = member.photoURL || 
+                    `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=9BFB02&color=000&size=60`;
+                
+                mobileDiv.innerHTML += `
+                    <div class="leaderboard-card ${isCurrentUser ? 'current-user' : ''} profile-clickable" onclick="viewUserProfile('${member.uid}')">
+                        <div class="rank-mobile ${rankClass}">${index + 1}</div>
+                        <img src="${photoURL}" class="profile-photo" alt="${member.name}">
+                        <div class="user-info-mobile">
+                            <div class="user-name-mobile">${member.name}${isCurrentUser ? ' (You)' : ''}</div>
+                            ${teamBadge}
+                        </div>
+                        <div class="user-points-mobile">${member.totalPoints || 0}</div>
+                    </div>
+                `;
+            });
+        }
     } catch (error) {
         console.error('Leaderboard error:', error);
         tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 30px; color: #ff6b6b;">
