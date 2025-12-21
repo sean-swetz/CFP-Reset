@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset 2026 Challenge Tracker</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/YOUR_FAVICON.png">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="loading" id="loading">Loading Reset 2026...</div>
+
+    <!-- Authentication Page -->
+    <div id="authPage" style="display: none;">
+        <div class="login-container">
+            <div class="header">
+                <img src="https://i.imgur.com/YOUR_LOGO.png" alt="CrossFit Prosperity" class="header-logo">
+                <h1>RESET 2026</h1>
+                <p class="subtitle">Nutrition & Fitness Challenge</p>
+            </div>
+
+            <div class="card">
+                <div class="auth-tabs">
+                    <div class="auth-tab active" onclick="showAuthTab('login')">Login</div>
+                    <div class="auth-tab" onclick="showAuthTab('register')">Register</div>
+                </div>
+
+                <div class="error-message" id="authError"></div>
+                <div class="success-message" id="authSuccess"></div>
+
+                <!-- Login Form -->
+                <form id="loginForm" class="auth-form active">
+                    <h2>Welcome Back!</h2>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="loginEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" required>
+                    </div>
+                    <button type="submit" class="btn" id="loginBtn">Login</button>
+                    <div class="forgot-password">
+                        <a href="#" onclick="showAuthTab('reset'); return false;">Forgot Password?</a>
+                    </div>
+                </form>
+
+                <!-- Register Form -->
+                <form id="registerForm" class="auth-form">
+                    <h2>Join the Challenge</h2>
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="regName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="regEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="regPassword" required minlength="6">
+                    </div>
+                    <button type="submit" class="btn" id="registerBtn">Create Account</button>
+                </form>
+
+                <!-- Password Reset Form -->
+                <form id="resetForm" class="auth-form">
+                    <h2>Reset Password</h2>
+                    <p style="color: #666; margin-bottom: 20px;">Enter your email address and we'll send you a link to reset your password.</p>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="resetEmail" required>
+                    </div>
+                    <button type="submit" class="btn" id="resetBtn">Send Reset Link</button>
+                    <div class="forgot-password">
+                        <a href="#" onclick="showAuthTab('login'); return false;">Back to Login</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app" class="container" style="display: none;">
+        <div class="header">
+            <img src="https://i.imgur.com/YOUR_LOGO.png" alt="CrossFit Prosperity" class="header-logo">
+            <h1>RESET 2026</h1>
+            <p class="subtitle">Nutrition & Fitness Challenge Tracker</p>
+        </div>
+
+        <div class="logged-in-user">
+            <span id="userGreeting">Welcome!</span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="nav-btn active" onclick="showSection('checkin')">Check In</button>
+            <button class="nav-btn" onclick="showSection('profile')">My Profile</button>
+            <button class="nav-btn" onclick="showSection('leaderboard')">The Whiteboard</button>
+            <button class="nav-btn" onclick="showSection('teams')">Teams</button>
+            <button class="nav-btn" onclick="showSection('locker')">The Locker Room</button>
+            <button class="nav-btn admin" id="adminNavBtn" onclick="showSection('admin')" style="display: none;">Admin</button>
+        </div>
+
+        <!-- Check In Section -->
+        <div id="checkin" class="section active">
+            <div class="card">
+                <h2>Weekly Check-In</h2>
+                
+                <div id="checkinWindowBanner"></div>
+                
+                <div class="success-message" id="checkinSuccess"></div>
+                <form id="checkinForm">
+                    <h3 style="color: #9BFB02; margin: 30px 0 15px 0;">💪 Earn Points</h3>
+                    
+                    <div class="challenge-item">
+                        <div class="challenge-header">
+                            <span class="challenge-name">Hit Protein Goal</span>
+                            <span class="challenge-points">+5 pts/day</span>
+                        </div>
+                        <div class="days-grid">
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="protein_mon" class="protein-check">
+                                <label>Mon</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="protein_tue" class="protein-check">
+                                <label>Tue</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="protein_wed" class="protein-check">
+                                <label>Wed</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="protein_thu" class="protein-check">
+                                <label>Thu</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="protein_fri" class="protein-check">
+                                <label>Fri</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="protein_sat" class="protein-check">
+                                <label>Sat</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="protein_sun" class="protein-check">
+                                <label>Sun</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="challenge-item">
+                        <div class="challenge-header">
+                            <span class="challenge-name">Hit Water Goal</span>
+                            <span class="challenge-points">+5 pts/day</span>
+                        </div>
+                        <div class="days-grid">
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="water_mon" class="water-check">
+                                <label>Mon</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="water_tue" class="water-check">
+                                <label>Tue</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="water_wed" class="water-check">
+                                <label>Wed</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="water_thu" class="water-check">
+                                <label>Thu</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="water_fri" class="water-check">
+                                <label>Fri</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="water_sat" class="water-check">
+                                <label>Sat</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="water_sun" class="water-check">
+                                <label>Sun</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="challenge-item">
+                        <div class="challenge-header">
+                            <span class="challenge-name">Attended 3+ Classes This Week</span>
+                            <span class="challenge-points">+15 pts</span>
+                        </div>
+                        <div class="single-checkbox">
+                            <input type="checkbox" id="classes">
+                            <label for="classes">Completed</label>
+                        </div>
+                    </div>
+
+                    <div class="challenge-item">
+                        <div class="challenge-header">
+                            <span class="challenge-name">Stretching/Yoga/Recovery</span>
+                            <span class="challenge-points">+3 pts/day</span>
+                        </div>
+                        <div class="days-grid">
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="recovery_mon" class="recovery-check">
+                                <label>Mon</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="recovery_tue" class="recovery-check">
+                                <label>Tue</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="recovery_wed" class="recovery-check">
+                                <label>Wed</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="recovery_thu" class="recovery-check">
+                                <label>Thu</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="recovery_fri" class="recovery-check">
+                                <label>Fri</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="recovery_sat" class="recovery-check">
+                                <label>Sat</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="recovery_sun" class="recovery-check">
+                                <label>Sun</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="challenge-item">
+                        <div class="challenge-header">
+                            <span class="challenge-name">Completed Weekly Challenge</span>
+                            <span class="challenge-points">+20 pts</span>
+                        </div>
+                        <div class="single-checkbox">
+                            <input type="checkbox" id="weekly">
+                            <label for="weekly">Completed</label>
+                        </div>
+                    </div>
+
+                    <h3 style="color: #ff6b6b; margin: 30px 0 15px 0;">⚠️ Deductions</h3>
+
+                    <div class="challenge-item deduction-item">
+                        <div class="challenge-header">
+                            <span class="challenge-name">Consumed Alcohol</span>
+                            <span class="challenge-points deduction-points">-5 pts/day</span>
+                        </div>
+                        <div class="days-grid">
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="alcohol_mon" class="alcohol-check">
+                                <label>Mon</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="alcohol_tue" class="alcohol-check">
+                                <label>Tue</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="alcohol_wed" class="alcohol-check">
+                                <label>Wed</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="alcohol_thu" class="alcohol-check">
+                                <label>Thu</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="alcohol_fri" class="alcohol-check">
+                                <label>Fri</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="alcohol_sat" class="alcohol-check">
+                                <label>Sat</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="alcohol_sun" class="alcohol-check">
+                                <label>Sun</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="challenge-item deduction-item">
+                        <div class="challenge-header">
+                            <span class="challenge-name">Late to Class</span>
+                            <span class="challenge-points deduction-points">-3 pts/occurrence</span>
+                        </div>
+                        <div class="days-grid">
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="late_mon" class="late-check">
+                                <label>Mon</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="late_tue" class="late-check">
+                                <label>Tue</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="late_wed" class="late-check">
+                                <label>Wed</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="late_thu" class="late-check">
+                                <label>Thu</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="late_fri" class="late-check">
+                                <label>Fri</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="late_sat" class="late-check">
+                                <label>Sat</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="late_sun" class="late-check">
+                                <label>Sun</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="challenge-item deduction-item">
+                        <div class="challenge-header">
+                            <span class="challenge-name">Missed Weekly Check-In</span>
+                            <span class="challenge-points deduction-points">-10 pts</span>
+                        </div>
+                        <div class="single-checkbox deduction">
+                            <input type="checkbox" id="missed">
+                            <label for="missed">Yes, I missed last week</label>
+                        </div>
+                    </div>
+
+                    <div class="total-score" id="totalScore">
+                        Total Weekly Score: 0 points
+                    </div>
+
+                    <button type="submit" class="btn" id="checkinBtn">Submit Check-In</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- My Profile Section -->
+        <div id="profile" class="section">
+            <div class="card">
+                <h2>👤 My Profile</h2>
+                
+                <div class="profile-container">
+                    <img id="profilePhotoDisplay" class="profile-photo large" 
+                         src="https://ui-avatars.com/api/?name=User&background=9BFB02&color=000&size=120" 
+                         alt="Profile Photo">
+                    <div>
+                        <input type="file" id="photoUpload" accept="image/*" style="display: none;" onchange="uploadProfilePhoto()">
+                        <button class="photo-upload-btn" onclick="document.getElementById('photoUpload').click()">
+                            📷 Upload Photo
+                        </button>
+                        <p style="color: #666; font-size: 0.9em; margin-top: 10px;">Max 5MB • JPG, PNG, or GIF • Large images auto-compressed</p>
+                    </div>
+                </div>
+
+                <div class="profile-info-grid">
+                    <div class="profile-info-item">
+                        <label>Nickname</label>
+                        <input type="text" class="profile-edit-input" id="profileNickname" 
+                               placeholder="Your nickname" maxlength="30">
+                    </div>
+                    <div class="profile-info-item">
+                        <label>Favorite CrossFit Movement</label>
+                        <input type="text" class="profile-edit-input" id="profileMovement" 
+                               placeholder="e.g., Deadlift, Box Jumps" maxlength="50">
+                    </div>
+                    <div class="profile-info-item">
+                        <label>Favorite Veggie</label>
+                        <input type="text" class="profile-edit-input" id="profileVeggie" 
+                               placeholder="e.g., Broccoli, Carrots" maxlength="50">
+                    </div>
+                    <div class="profile-info-item">
+                        <label>#1 Goal This Challenge</label>
+                        <input type="text" class="profile-edit-input" id="profileGoal" 
+                               placeholder="e.g., Lose 10lbs, PR my deadlift" maxlength="100">
+                    </div>
+                </div>
+
+                <button class="btn" onclick="saveProfile()" style="margin-top: 30px;">
+                    💾 Save Profile
+                </button>
+            </div>
+        </div>
+
+        <!-- Leaderboard Section -->
+        <div id="leaderboard" class="section">
+            <div class="card">
+                <h2>📊 The Whiteboard</h2>
+                
+                <div id="teamStandings" style="margin-bottom: 30px;">
+                    <h3 style="color: #3146E7; margin-bottom: 15px;">Team Standings</h3>
+                    <div class="team-leaderboard" id="teamLeaderboard"></div>
+                </div>
+
+                <h3 style="color: #3146E7; margin-bottom: 15px;">Individual Rankings</h3>
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Name</th>
+                            <th>Team</th>
+                            <th>Total Points</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboardBody">
+                        <tr><td colspan="4" style="text-align: center; padding: 30px;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Teams Page -->
+        <div id="teams" class="section">
+            <div class="card">
+                <h2>👥 Team Rosters</h2>
+                <p style="color: #666; margin-bottom: 30px;">View all team members, captains, and individual scores</p>
+                <div id="teamsContent">
+                    <p style="text-align: center; padding: 30px;">Loading teams...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- The Locker Room -->
+        <div id="locker" class="section">
+            <div class="card">
+                <h2>💬 The Locker Room</h2>
+                <p style="color: #666; margin-bottom: 20px;">Share PRs, wins, and talk with your teammates!</p>
+
+                <div class="locker-room-challenge" id="weeklyChallenge">
+                    <h3>🎯 This Week's Challenge</h3>
+                    <div class="challenge-text" id="challengeText">
+                        Loading challenge...
+                    </div>
+                    <button class="edit-challenge-btn" id="editChallengeBtn" style="display: none;" onclick="editChallenge()">
+                        ✏️ Edit Challenge
+                    </button>
+                </div>
+
+                <h3 style="margin-bottom: 15px;">📢 Message Board</h3>
+                <div class="messages-container" id="messagesContainer">
+                    <p style="text-align: center; padding: 30px; color: #999;">Loading messages...</p>
+                </div>
+
+                <div class="message-input-container">
+                    <textarea id="messageInput" placeholder="Share a PR, celebrate a win, or talk some friendly trash... 💪" maxlength="500"></textarea>
+                    <div class="char-counter" id="charCounter">0 / 500</div>
+                    <button class="btn" onclick="postMessage()" id="postMessageBtn" style="margin-top: 15px;">
+                        📤 Post Message
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Section -->
+        <div id="admin" class="section">
+            <div class="card">
+                <h2>🔧 Admin Dashboard</h2>
+                <div class="info-message">
+                    <strong>Admin Access:</strong> You can export data and manage user visibility on the leaderboard.
+                </div>
+
+                <div class="admin-controls">
+                    <div class="admin-card">
+                        <h3>Total Users</h3>
+                        <div class="stat" id="totalUsers">0</div>
+                    </div>
+                    <div class="admin-card">
+                        <h3>Total Check-ins</h3>
+                        <div class="stat" id="totalCheckins">0</div>
+                    </div>
+                    <div class="admin-card">
+                        <h3>Visible Users</h3>
+                        <div class="stat" id="visibleUsers">0</div>
+                    </div>
+                </div>
+
+                <div class="window-control">
+                    <h3 style="margin-bottom: 15px;">⏰ Check-In Window Control</h3>
+                    <p style="color: #666; margin-bottom: 15px;">
+                        Control when members can submit their weekly check-ins.
+                    </p>
+                    <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                        <span style="font-weight: 600;">Current Status:</span>
+                        <span class="window-status" id="windowStatus">Loading...</span>
+                    </div>
+                    <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn btn-secondary" onclick="window.toggleCheckinWindow(true)" style="flex: 1; min-width: 150px; background: linear-gradient(135deg, #9BFB02 0%, #7dd102 100%); color: #000;">
+                            ✅ Open Check-Ins
+                        </button>
+                        <button class="btn btn-danger" onclick="window.toggleCheckinWindow(false)" style="flex: 1; min-width: 150px;">
+                            🚫 Close Check-Ins
+                        </button>
+                    </div>
+                </div>
+
+                <div class="point-adjustment-section">
+                    <h3 style="margin-bottom: 15px;">🔧 Manual Point Adjustment</h3>
+                    <p style="color: #666; margin-bottom: 15px;">Add or subtract points with a reason</p>
+                    
+                    <div class="adjustment-form">
+                        <select id="adjustmentUser" class="adjustment-input">
+                            <option value="">Select User...</option>
+                        </select>
+                        <input type="number" id="adjustmentPoints" class="adjustment-input" 
+                               placeholder="Points (+10 or -5)" step="1">
+                        <input type="text" id="adjustmentReason" class="adjustment-input" 
+                               placeholder="Reason (e.g., Forgot Monday protein)" 
+                               style="grid-column: 1 / -1;">
+                    </div>
+                    
+                    <button class="btn btn-secondary" onclick="applyPointAdjustment()">
+                        ✅ Apply Adjustment
+                    </button>
+
+                    <div class="adjustment-history" id="adjustmentHistory">
+                        <h4 style="margin-bottom: 10px;">Recent Adjustments</h4>
+                        <p style="color: #999; text-align: center; padding: 20px;">No adjustments yet</p>
+                    </div>
+                </div>
+
+                <div class="export-section">
+                    <h3>Export Data</h3>
+                    <p style="margin-bottom: 15px; color: #666;">Download all user and check-in data as CSV files.</p>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn btn-secondary" onclick="exportUsersCSV()" style="flex: 1; min-width: 200px;">
+                            📊 Export All Users
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportCheckinsCSV()" style="flex: 1; min-width: 200px;">
+                            📋 Export All Check-ins
+                        </button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <h3>Customize Team Names</h3>
+                    <p style="margin-bottom: 15px; color: #666;">Give each team a custom name while keeping their colors!</p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-bottom: 30px;">
+                        <div style="background: #ff6b6b; padding: 15px; border-radius: 10px; color: white;">
+                            <strong>🔴 Red Team</strong>
+                            <input type="text" class="team-name-input" id="teamName_red" placeholder="e.g., Red Warriors" 
+                                   onblur="window.updateTeamName('red', this.value)"
+                                   onkeypress="if(event.key==='Enter'){event.preventDefault();this.blur();}">
+                        </div>
+                        <div style="background: #3146E7; padding: 15px; border-radius: 10px; color: white;">
+                            <strong>🔵 Blue Team</strong>
+                            <input type="text" class="team-name-input" id="teamName_blue" placeholder="e.g., Blue Legends" 
+                                   onblur="window.updateTeamName('blue', this.value)"
+                                   onkeypress="if(event.key==='Enter'){event.preventDefault();this.blur();}">
+                        </div>
+                        <div style="background: #9BFB02; padding: 15px; border-radius: 10px; color: #000;">
+                            <strong>🟢 Green Team</strong>
+                            <input type="text" class="team-name-input" id="teamName_green" placeholder="e.g., Green Machines" 
+                                   onblur="window.updateTeamName('green', this.value)"
+                                   onkeypress="if(event.key==='Enter'){event.preventDefault();this.blur();}"
+                                   style="color: #000; background: rgba(255,255,255,0.8);">
+                        </div>
+                        <div style="background: #ffd93d; padding: 15px; border-radius: 10px; color: #333;">
+                            <strong>🟡 Yellow Team</strong>
+                            <input type="text" class="team-name-input" id="teamName_yellow" placeholder="e.g., Yellow Thunder" 
+                                   onblur="window.updateTeamName('yellow', this.value)"
+                                   onkeypress="if(event.key==='Enter'){event.preventDefault();this.blur();}" 
+                                   style="color: #333; background: rgba(255,255,255,0.8);">
+                        </div>
+                        <div style="background: #a55eea; padding: 15px; border-radius: 10px; color: white;">
+                            <strong>🟣 Purple Team</strong>
+                            <input type="text" class="team-name-input" id="teamName_purple" placeholder="e.g., Purple Reign" 
+                                   onblur="window.updateTeamName('purple', this.value)"
+                                   onkeypress="if(event.key==='Enter'){event.preventDefault();this.blur();}">
+                        </div>
+                        <div style="background: #ff9f43; padding: 15px; border-radius: 10px; color: white;">
+                            <strong>🟠 Orange Team</strong>
+                            <input type="text" class="team-name-input" id="teamName_orange" placeholder="e.g., Orange Crush" 
+                                   onblur="window.updateTeamName('orange', this.value)"
+                                   onkeypress="if(event.key==='Enter'){event.preventDefault();this.blur();}">
+                        </div>
+                        <div style="background: #fd79a8; padding: 15px; border-radius: 10px; color: white;">
+                            <strong>🩷 Pink Team</strong>
+                            <input type="text" class="team-name-input" id="teamName_pink" placeholder="e.g., Pink Panthers" 
+                                   onblur="window.updateTeamName('pink', this.value)"
+                                   onkeypress="if(event.key==='Enter'){event.preventDefault();this.blur();}">
+                        </div>
+                        <div style="background: #00d2d3; padding: 15px; border-radius: 10px; color: white;">
+                            <strong>🩵 Teal Team</strong>
+                            <input type="text" class="team-name-input" id="teamName_teal" placeholder="e.g., Teal Titans" 
+                                   onblur="window.updateTeamName('teal', this.value)"
+                                   onkeypress="if(event.key==='Enter'){event.preventDefault();this.blur();}">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <h3>Manage User Teams & Visibility</h3>
+                    <p style="margin-bottom: 15px; color: #666;">Assign users to teams and control leaderboard visibility.</p>
+                    <div class="user-list" id="adminUserList">
+                        <p style="text-align: center; padding: 20px;">Loading users...</p>
+                    </div>
+                </div>
+
+                <div class="export-section" style="margin-top: 30px;">
+                    <h3>Export by Team</h3>
+                    <p style="margin-bottom: 15px; color: #666;">Download user and check-in data filtered by team.</p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                        <button class="btn btn-secondary" onclick="exportTeamData('red')" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);">
+                            📊 Red Team
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportTeamData('blue')" style="background: linear-gradient(135deg, #3146E7 0%, #2236c7 100%);">
+                            📊 Blue Team
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportTeamData('green')" style="background: linear-gradient(135deg, #9BFB02 0%, #7dd102 100%); color: #000;">
+                            📊 Green Team
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportTeamData('yellow')" style="background: linear-gradient(135deg, #ffd93d 0%, #f5c542 100%); color: #333;">
+                            📊 Yellow Team
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportTeamData('purple')" style="background: linear-gradient(135deg, #a55eea 0%, #8854d0 100%);">
+                            📊 Purple Team
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportTeamData('orange')" style="background: linear-gradient(135deg, #ff9f43 0%, #ee8f34 100%);">
+                            📊 Orange Team
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportTeamData('pink')" style="background: linear-gradient(135deg, #fd79a8 0%, #e66992 100%);">
+                            📊 Pink Team
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportTeamData('teal')" style="background: linear-gradient(135deg, #00d2d3 0%, #00b4b5 100%);">
+                            📊 Teal Team
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeProfileModal()">&times;</span>
+            <div id="profileModalContent"></div>
+        </div>
+    </div>
+
+    <!-- Challenge Editor Modal -->
+    <div id="challengeEditorModal" class="challenge-editor-modal">
+        <div class="challenge-editor-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0;">✏️ Edit Weekly Challenge</h2>
+                <span class="modal-close" onclick="closeChallengeEditor()">&times;</span>
+            </div>
+
+            <div class="editor-toolbar">
+                <button class="editor-btn" onclick="insertText('**', '**')" title="Bold">
+                    <strong>B</strong>
+                </button>
+                <button class="editor-btn" onclick="insertText('*', '*')" title="Italic">
+                    <em>I</em>
+                </button>
+                <button class="editor-btn" onclick="insertText('• ', '')" title="Bullet Point">
+                    • List
+                </button>
+                <button class="editor-btn" onclick="insertText('💪 ', '')" title="Add Emoji">
+                    😊 Emoji
+                </button>
+                <button class="editor-btn" onclick="insertText('\n---\n', '')" title="Divider">
+                    ➖ Line
+                </button>
+            </div>
+
+            <textarea id="challengeEditorText" class="challenge-editor-textarea" 
+                      placeholder="Enter this week's challenge..."></textarea>
+
+            <div class="editor-preview">
+                <h3>Preview:</h3>
+                <div id="challengePreview"></div>
+            </div>
+
+            <div class="editor-actions">
+                <button class="btn" onclick="saveChallengeFromEditor()">
+                    💾 Save Challenge
+                </button>
+                <button class="btn btn-secondary" onclick="closeChallengeEditor()" 
+                        style="background: #999;">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- External JavaScript -->
+    <script type="module" src="app.js"></script>
+</body>
+</html>
