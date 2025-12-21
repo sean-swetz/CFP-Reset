@@ -69,6 +69,7 @@ function showApp() {
     
     checkCheckinWindow();
     loadLeaderboard();
+    loadCheckInCriteria();
 }
 
 function showAuthPage() {
@@ -232,7 +233,10 @@ window.showSection = function(sectionName) {
     
     document.getElementById(sectionName).classList.add('active');
     event.target.classList.add('active');
-
+    
+    if (sectionName === 'checkin') {
+    loadCheckInCriteria();
+}
     if (sectionName === 'leaderboard') {
         loadLeaderboard();
     } else if (sectionName === 'teams') {
@@ -248,28 +252,72 @@ window.showSection = function(sectionName) {
 };
 
 // ===== CHECK-IN FUNCTIONALITY =====
-function updateTotalScore() {
-    const protein = document.querySelectorAll('.protein-check:checked').length;
-    const water = document.querySelectorAll('.water-check:checked').length;
-    const classes = document.getElementById('classes').checked ? 1 : 0;
-    const recovery = document.querySelectorAll('.recovery-check:checked').length;
-    const weekly = document.getElementById('weekly').checked ? 1 : 0;
-    const alcohol = document.querySelectorAll('.alcohol-check:checked').length;
-    const late = document.querySelectorAll('.late-check:checked').length;
-    const missed = document.getElementById('missed').checked ? 1 : 0;
+document.getElementById('checkinForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-    const total = (protein * 5) + (water * 5) + (classes * 15) + 
-                 (recovery * 3) + (weekly * 20) - (alcohol * 5) - 
-                 (late * 3) - (missed * 10);
+    if (!currentUser) return;
 
-    document.getElementById('totalScore').textContent = 
-        `Total Weekly Score: ${total} points`;
-}
+    const btn = document.getElementById('checkinBtn');
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
 
-document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-    checkbox.addEventListener('change', updateTotalScore);
+    try {
+        // Collect all checked criteria
+        const checkedCriteria = {};
+        document.querySelectorAll('.criteria-check:checked').forEach(checkbox => {
+            const id = checkbox.id;
+            const criteriaId = checkbox.id.includes('_') ? checkbox.id.split('_')[0] : checkbox.id;
+            
+            if (!checkedCriteria[criteriaId]) {
+                checkedCriteria[criteriaId] = [];
+            }
+            checkedCriteria[criteriaId].push(id);
+        });
+
+        // Calculate total score
+        let weeklyScore = 0;
+        document.querySelectorAll('.criteria-check:checked').forEach(checkbox => {
+            weeklyScore += parseInt(checkbox.dataset.points);
+        });
+
+        // Update user points
+        const userRef = doc(db, 'users', currentUser.uid);
+        await updateDoc(userRef, {
+            totalPoints: increment(weeklyScore),
+            lastCheckin: new Date().toISOString()
+        });
+
+        // Save check-in
+        await addDoc(collection(db, 'checkins'), {
+            userId: currentUser.uid,
+            name: currentUser.name,
+            email: currentUser.email,
+            weeklyScore: weeklyScore,
+            criteriaData: checkedCriteria,
+            timestamp: new Date().toISOString()
+        });
+
+        currentUser.totalPoints = (currentUser.totalPoints || 0) + weeklyScore;
+
+        const successMsg = document.getElementById('checkinSuccess');
+        successMsg.textContent = `Check-in submitted! You earned ${weeklyScore} points this week. Your total is now ${currentUser.totalPoints} points.`;
+        successMsg.style.display = 'block';
+        
+        document.getElementById('checkinForm').reset();
+        calculateDynamicScore();
+
+        setTimeout(() => {
+            successMsg.style.display = 'none';
+        }, 5000);
+
+    } catch (error) {
+        console.error('Check-in error:', error);
+        alert('Failed to submit check-in. Please try again.');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Submit Check-In';
+    }
 });
-
 // Check-in Form
 document.getElementById('checkinForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -1183,6 +1231,7 @@ async function loadAdminData() {
 
         loadAdjustmentUsers();
         loadAdjustmentHistory();
+        loadCriteriaList();
 
     } catch (error) {
         console.error('Admin data error:', error);
@@ -1549,6 +1598,303 @@ function downloadCSV(csv, filename) {
     a.click();
     document.body.removeChild(a);
 }
+// ===== EDITABLE CRITERIA SYSTEM =====
 
+// Load criteria for check-in form
+async function loadCheckInCriteria() {
+    try {
+        const q = query(collection(db, 'criteria'), orderBy('order', 'asc'));
+        const querySnapshot = await getDocs(q);
+        
+        const container = document.getElementById('dynamicCriteria');
+        
+        if (querySnapshot.empty) {
+            container.innerHTML = '<p style="text-align: center; padding: 30px; color: #999;">No criteria available yet. Contact your admin!</p>';
+            return;
+        }
+        
+        let html = '';
+        const earns = [];
+        const deductions = [];
+        
+        querySnapshot.forEach((doc) => {
+            const criteria = { id: doc.id, ...doc.data() };
+            if (criteria.points >= 0) {
+                earns.push(criteria);
+            } else {
+                deductions.push(criteria);
+            }
+        });
+        
+        // Earn points section
+        if (earns.length > 0) {
+            html += '<h3 style="color: #9BFB02; margin: 30px 0 15px 0;">💪 Earn Points</h3>';
+            earns.forEach(criteria => {
+                html += renderCheckInCriteria(criteria);
+            });
+        }
+        
+        // Deductions section
+        if (deductions.length > 0) {
+            html += '<h3 style="color: #ff6b6b; margin: 30px 0 15px 0;">⚠️ Deductions</h3>';
+            deductions.forEach(criteria => {
+                html += renderCheckInCriteria(criteria);
+            });
+        }
+        
+        container.innerHTML = html;
+        
+        // Add event listeners to all checkboxes
+        document.querySelectorAll('#dynamicCriteria input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', calculateDynamicScore);
+        });
+        
+        calculateDynamicScore();
+        
+    } catch (error) {
+        console.error('Load check-in criteria error:', error);
+        document.getElementById('dynamicCriteria').innerHTML = 
+            '<p style="text-align: center; padding: 30px; color: #ff6b6b;">Error loading criteria</p>';
+    }
+}
+
+function renderCheckInCriteria(criteria) {
+    const isDeduction = criteria.points < 0;
+    const itemClass = isDeduction ? 'challenge-item deduction-item' : 'challenge-item';
+    const pointsClass = isDeduction ? 'challenge-points deduction-points' : 'challenge-points';
+    const pointsLabel = `${criteria.points > 0 ? '+' : ''}${criteria.points} pts${criteria.type === 'daily' ? '/day' : ''}`;
+    
+    if (criteria.type === 'daily') {
+        return `
+            <div class="${itemClass}" data-criteria-id="${criteria.id}">
+                <div class="challenge-header">
+                    <span class="challenge-name">${criteria.name}</span>
+                    <span class="${pointsClass}">${pointsLabel}</span>
+                </div>
+                <div class="days-grid">
+                    <div class="day-checkbox">
+                        <input type="checkbox" id="${criteria.id}_mon" class="criteria-check" data-points="${criteria.points}">
+                        <label>Mon</label>
+                    </div>
+                    <div class="day-checkbox">
+                        <input type="checkbox" id="${criteria.id}_tue" class="criteria-check" data-points="${criteria.points}">
+                        <label>Tue</label>
+                    </div>
+                    <div class="day-checkbox">
+                        <input type="checkbox" id="${criteria.id}_wed" class="criteria-check" data-points="${criteria.points}">
+                        <label>Wed</label>
+                    </div>
+                    <div class="day-checkbox">
+                        <input type="checkbox" id="${criteria.id}_thu" class="criteria-check" data-points="${criteria.points}">
+                        <label>Thu</label>
+                    </div>
+                    <div class="day-checkbox">
+                        <input type="checkbox" id="${criteria.id}_fri" class="criteria-check" data-points="${criteria.points}">
+                        <label>Fri</label>
+                    </div>
+                    <div class="day-checkbox">
+                        <input type="checkbox" id="${criteria.id}_sat" class="criteria-check" data-points="${criteria.points}">
+                        <label>Sat</label>
+                    </div>
+                    <div class="day-checkbox">
+                        <input type="checkbox" id="${criteria.id}_sun" class="criteria-check" data-points="${criteria.points}">
+                        <label>Sun</label>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else {
+        // Weekly single checkbox
+        const checkboxClass = isDeduction ? 'single-checkbox deduction' : 'single-checkbox';
+        return `
+            <div class="${itemClass}" data-criteria-id="${criteria.id}">
+                <div class="challenge-header">
+                    <span class="challenge-name">${criteria.name}</span>
+                    <span class="${pointsClass}">${pointsLabel}</span>
+                </div>
+                <div class="${checkboxClass}">
+                    <input type="checkbox" id="${criteria.id}" class="criteria-check" data-points="${criteria.points}">
+                    <label for="${criteria.id}">Completed</label>
+                </div>
+            </div>
+        `;
+    }
+}
+
+function calculateDynamicScore() {
+    let total = 0;
+    
+    document.querySelectorAll('.criteria-check:checked').forEach(checkbox => {
+        const points = parseInt(checkbox.dataset.points);
+        total += points;
+    });
+    
+    document.getElementById('totalScore').textContent = `Total Weekly Score: ${total} points`;
+}
+
+// Load criteria for admin panel
+async function loadCriteriaList() {
+    if (!isAdmin) return;
+    
+    try {
+        const q = query(collection(db, 'criteria'), orderBy('order', 'asc'));
+        const querySnapshot = await getDocs(q);
+        
+        const criteriaList = document.getElementById('criteriaList');
+        
+        if (querySnapshot.empty) {
+            criteriaList.innerHTML = '<p style="text-align: center; padding: 20px; color: #999;">No criteria yet. Click "Add New Criteria" to create one!</p>';
+            return;
+        }
+        
+        let html = '';
+        querySnapshot.forEach((doc) => {
+            const criteria = { id: doc.id, ...doc.data() };
+            html += renderCriteriaItem(criteria);
+        });
+        
+        criteriaList.innerHTML = html;
+    } catch (error) {
+        console.error('Load criteria error:', error);
+    }
+}
+
+function renderCriteriaItem(criteria) {
+    const isDeduction = criteria.points < 0;
+    const typeLabel = criteria.type === 'daily' ? '📅 Daily' : '📋 Weekly';
+    const pointsLabel = `${criteria.points > 0 ? '+' : ''}${criteria.points} pts${criteria.type === 'daily' ? '/day' : ''}`;
+    
+    return `
+        <div class="criteria-item ${isDeduction ? 'deduction' : ''}">
+            <div class="criteria-header">
+                <div class="criteria-info">
+                    <div class="criteria-name-display">${criteria.name}</div>
+                    <div class="criteria-details">${typeLabel} • ${pointsLabel}</div>
+                </div>
+                <div class="criteria-actions">
+                    <button class="icon-btn" onclick="editCriteria('${criteria.id}')" title="Edit">
+                        ✏️
+                    </button>
+                    <button class="icon-btn" onclick="deleteCriteria('${criteria.id}', '${criteria.name}')" title="Delete">
+                        🗑️
+                    </button>
+                </div>
+            </div>
+            
+            <div class="criteria-edit-form" id="edit-${criteria.id}">
+                <div class="criteria-form-row">
+                    <input type="text" class="criteria-input" id="name-${criteria.id}" value="${criteria.name}" placeholder="Criteria name">
+                    <input type="number" class="criteria-input" id="points-${criteria.id}" value="${criteria.points}" placeholder="Points">
+                </div>
+                <div class="criteria-form-row">
+                    <select class="criteria-input" id="type-${criteria.id}">
+                        <option value="daily" ${criteria.type === 'daily' ? 'selected' : ''}>Daily (7 checkboxes)</option>
+                        <option value="weekly" ${criteria.type === 'weekly' ? 'selected' : ''}>Weekly (single checkbox)</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button class="btn btn-secondary" onclick="saveCriteria('${criteria.id}')" style="flex: 1;">
+                        💾 Save
+                    </button>
+                    <button class="btn" onclick="cancelEdit('${criteria.id}')" style="flex: 1; background: #999;">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Add new criteria
+window.addNewCriteria = async function() {
+    if (!isAdmin) return;
+    
+    const name = prompt('Criteria name (e.g., "Hit Protein Goal"):');
+    if (!name) return;
+    
+    const points = prompt('Points value (use negative for deductions):');
+    if (!points) return;
+    
+    const type = confirm('Is this a DAILY criteria?\n\nClick OK for Daily (7 checkboxes)\nClick Cancel for Weekly (single checkbox)') ? 'daily' : 'weekly';
+    
+    try {
+        // Get current max order
+        const q = query(collection(db, 'criteria'), orderBy('order', 'desc'));
+        const snapshot = await getDocs(q);
+        const maxOrder = snapshot.empty ? 0 : snapshot.docs[0].data().order;
+        
+        await addDoc(collection(db, 'criteria'), {
+            name: name,
+            points: parseInt(points),
+            type: type,
+            order: maxOrder + 1,
+            createdAt: new Date().toISOString()
+        });
+        
+        alert('Criteria added! ✅');
+        loadCriteriaList();
+        
+    } catch (error) {
+        console.error('Add criteria error:', error);
+        alert('Failed to add criteria: ' + error.message);
+    }
+};
+
+// Edit criteria
+window.editCriteria = function(id) {
+    const form = document.getElementById(`edit-${id}`);
+    form.classList.toggle('active');
+};
+
+window.cancelEdit = function(id) {
+    const form = document.getElementById(`edit-${id}`);
+    form.classList.remove('active');
+};
+
+window.saveCriteria = async function(id) {
+    if (!isAdmin) return;
+    
+    const name = document.getElementById(`name-${id}`).value;
+    const points = parseInt(document.getElementById(`points-${id}`).value);
+    const type = document.getElementById(`type-${id}`).value;
+    
+    if (!name || isNaN(points)) {
+        alert('Please fill in all fields!');
+        return;
+    }
+    
+    try {
+        await updateDoc(doc(db, 'criteria', id), {
+            name: name,
+            points: points,
+            type: type,
+            updatedAt: new Date().toISOString()
+        });
+        
+        alert('Criteria updated! ✅');
+        loadCriteriaList();
+        
+    } catch (error) {
+        console.error('Save criteria error:', error);
+        alert('Failed to save: ' + error.message);
+    }
+};
+
+// Delete criteria
+window.deleteCriteria = async function(id, name) {
+    if (!isAdmin) return;
+    
+    const confirmed = confirm(`Delete "${name}"?\n\nThis will remove it from future check-ins.`);
+    if (!confirmed) return;
+    
+    try {
+        await deleteDoc(doc(db, 'criteria', id));
+        alert('Criteria deleted! ✅');
+        loadCriteriaList();
+    } catch (error) {
+        console.error('Delete criteria error:', error);
+        alert('Failed to delete: ' + error.message);
+    }
+};
 // Initialize score display
-updateTotalScore();
+
