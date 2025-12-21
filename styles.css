@@ -1215,3 +1215,90 @@ input[type="number"]:focus {
         width: 100%;
     }
 }
+/* Criteria Management */
+.criteria-item {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    border-left: 4px solid #9BFB02;
+}
+
+.criteria-item.deduction {
+    border-left-color: #ff6b6b;
+}
+
+.criteria-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.criteria-info {
+    flex: 1;
+}
+
+.criteria-name-display {
+    font-size: 1.2em;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.criteria-details {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.criteria-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.criteria-edit-form {
+    display: none;
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.criteria-edit-form.active {
+    display: block;
+}
+
+.criteria-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.criteria-input {
+    padding: 8px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 0.95em;
+}
+
+.criteria-input:focus {
+    outline: none;
+    border-color: #9BFB02;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    font-size: 1.2em;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background 0.2s;
+}
+
+.icon-btn:hover {
+    background: rgba(0,0,0,0.1);
+}
