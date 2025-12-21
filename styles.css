@@ -1493,3 +1493,33 @@ input[type="number"]:focus {
         display: flex;
     }
 }
+/* ===== TEAM CHAT ===== */
+.team-channel-btn {
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 1em;
+}
+
+.team-channel-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.team-channel-btn.active {
+    transform: scale(1.05);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+}
+
+.team-channel-btn.team-red { background: #ff6b6b; }
+.team-channel-btn.team-blue { background: #3146E7; }
+.team-channel-btn.team-green { background: #9BFB02; color: #000; }
+.team-channel-btn.team-yellow { background: #ffd93d; color: #333; }
+.team-channel-btn.team-purple { background: #a55eea; }
+.team-channel-btn.team-orange { background: #ff9f43; }
+.team-channel-btn.team-pink { background: #fd79a8; }
+.team-channel-btn.team-teal { background: #00d2d3; }
