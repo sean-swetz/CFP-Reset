@@ -33,7 +33,21 @@
     </div>
 </div>
     <div class="loading" id="loading">Loading Reset 2026...</div>
-
+    
+<!-- Notification Permission Banner -->
+<div id="notificationBanner" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #9BFB02 0%, #7dd102 100%); color: #000; padding: 20px 30px; border-radius: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); z-index: 1000; max-width: 90%; text-align: center;">
+    <p style="margin: 0 0 15px 0; font-weight: 600; font-size: 1.1em;">📬 Get Check-In Reminders!</p>
+    <p style="margin: 0 0 15px 0; font-size: 0.95em;">We'll send you a friendly reminder when it's time to check in each week.</p>
+    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+        <button onclick="enableNotifications()" style="background: #000; color: #9BFB02; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer;">
+            ✅ Enable Notifications
+        </button>
+        <button onclick="dismissNotificationBanner()" style="background: transparent; border: 2px solid #000; color: #000; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer;">
+            Maybe Later
+        </button>
+    </div>
+</div>
+    
     <!-- Authentication Page -->
     <div id="authPage" style="display: none;">
         <div class="login-container">
@@ -192,6 +206,16 @@
                 <button class="btn" onclick="saveProfile()" style="margin-top: 30px;">
                     💾 Save Profile
                 </button>
+                <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+    <h3 style="margin-bottom: 15px;">🔔 Notification Settings</h3>
+    <p style="color: #666; margin-bottom: 15px;">
+        Get browser notifications to remind you to check in each week.
+    </p>
+    <div id="notificationStatus"></div>
+    <button class="btn btn-secondary" onclick="manageNotifications()" id="notificationBtn" style="margin-top: 10px;">
+        🔔 Enable Notifications
+    </button>
+</div>
             </div>
         </div>
 
@@ -372,6 +396,15 @@
     </button>
 </div>
 
+                <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+    <h3 style="margin-bottom: 15px;">🔔 Send Check-In Reminder</h3>
+    <p style="color: #666; margin-bottom: 15px;">
+        Send a browser notification to all users who have enabled notifications.
+    </p>
+    <button class="btn btn-secondary" onclick="sendCheckInReminder()">
+        📢 Send Reminder to All
+    </button>
+</div>
                 <div class="point-adjustment-section">
                     <h3 style="margin-bottom: 15px;">🔧 Manual Point Adjustment</h3>
                     <p style="color: #666; margin-bottom: 15px;">Add or subtract points with a reason</p>
