@@ -8,6 +8,30 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Mobile Hamburger Menu -->
+<div class="hamburger-menu" id="hamburgerMenu" onclick="toggleMobileMenu()">
+    <div class="hamburger-line"></div>
+    <div class="hamburger-line"></div>
+    <div class="hamburger-line"></div>
+</div>
+
+<div class="mobile-nav-overlay" id="mobileNavOverlay" onclick="toggleMobileMenu()"></div>
+
+<div class="mobile-nav-menu" id="mobileNavMenu">
+    <div class="mobile-nav-header">
+        <h3>RESET 2026</h3>
+        <p style="margin: 5px 0 0 0; font-size: 0.9em;">Navigation</p>
+    </div>
+    <div class="mobile-nav-links">
+        <a class="mobile-nav-link active" onclick="mobileShowSection('checkin')">📋 Check In</a>
+        <a class="mobile-nav-link" onclick="mobileShowSection('profile')">👤 My Profile</a>
+        <a class="mobile-nav-link" onclick="mobileShowSection('leaderboard')">📊 The Whiteboard</a>
+        <a class="mobile-nav-link" onclick="mobileShowSection('teams')">👥 Teams</a>
+        <a class="mobile-nav-link" onclick="mobileShowSection('locker')">💬 The Locker Room</a>
+        <a class="mobile-nav-link admin" id="mobileAdminLink" onclick="mobileShowSection('admin')" style="display: none;">🔧 Admin</a>
+        <a class="mobile-nav-link" onclick="logout()" style="color: #ff6b6b; margin-top: 20px;">🚪 Logout</a>
+    </div>
+</div>
     <div class="loading" id="loading">Loading Reset 2026...</div>
 
     <!-- Authentication Page -->
