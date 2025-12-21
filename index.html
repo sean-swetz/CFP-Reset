@@ -264,6 +264,62 @@
                         📤 Post Message
                     </button>
                 </div>
+                <div class="message-input-container">
+                    <textarea id="messageInput" placeholder="Share a PR, celebrate a win, or talk some friendly trash... 💪" maxlength="500"></textarea>
+                    <div class="char-counter" id="charCounter">0 / 500</div>
+                    <button class="btn" onclick="postMessage()" id="postMessageBtn" style="margin-top: 15px;">
+                        📤 Post Message
+                    </button>
+                </div>
+                <!-- Team Chat Section -->
+                <div style="margin-top: 50px; padding-top: 30px; border-top: 3px solid #9BFB02;">
+                    <h2 style="color: #9BFB02; margin-bottom: 20px;">🏆 Team Channels</h2>
+                    <p style="color: #666; margin-bottom: 20px;">Private chat with your teammates for strategy, motivation, and friendly competition!</p>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="margin-bottom: 15px;">Select Your Team Channel</h3>
+                        <div id="teamChannelSelector" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px;">
+                            <button class="team-channel-btn team-red" onclick="switchTeamChannel('red')" style="display: none;">
+                                🔴 Red
+                            </button>
+                            <button class="team-channel-btn team-blue" onclick="switchTeamChannel('blue')" style="display: none;">
+                                🔵 Blue
+                            </button>
+                            <button class="team-channel-btn team-green" onclick="switchTeamChannel('green')" style="display: none;">
+                                🟢 Green
+                            </button>
+                            <button class="team-channel-btn team-yellow" onclick="switchTeamChannel('yellow')" style="display: none;">
+                                🟡 Yellow
+                            </button>
+                            <button class="team-channel-btn team-purple" onclick="switchTeamChannel('purple')" style="display: none;">
+                                🟣 Purple
+                            </button>
+                            <button class="team-channel-btn team-orange" onclick="switchTeamChannel('orange')" style="display: none;">
+                                🟠 Orange
+                            </button>
+                            <button class="team-channel-btn team-pink" onclick="switchTeamChannel('pink')" style="display: none;">
+                                🩷 Pink
+                            </button>
+                            <button class="team-channel-btn team-teal" onclick="switchTeamChannel('teal')" style="display: none;">
+                                🩵 Teal
+                            </button>
+                        </div>
+                        <p id="currentChannelName" style="margin-top: 10px; color: #666; font-weight: 600;"></p>
+                    </div>
+
+                    <h3 style="margin-bottom: 15px;">📢 Team Messages</h3>
+                    <div class="messages-container" id="teamMessagesContainer">
+                        <p style="text-align: center; padding: 30px; color: #999;">Select your team channel above to view messages</p>
+                    </div>
+
+                    <div class="message-input-container" id="teamMessageInput" style="display: none;">
+                        <textarea id="teamMessageText" placeholder="Message your team... 💪" maxlength="500"></textarea>
+                        <div class="char-counter" id="teamCharCounter">0 / 500</div>
+                        <button class="btn" onclick="postTeamMessage()" id="postTeamMessageBtn" style="margin-top: 15px;">
+                            📤 Post to Team
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
