@@ -247,8 +247,9 @@ window.showSection = function(sectionName) {
     } else if (sectionName === 'teams') {
         loadTeamsPage();
     } else if (sectionName === 'locker') {
-        loadWeeklyChallenge();
-        loadMessages();
+    loadWeeklyChallenge();
+    loadMessages();
+    initTeamChat();
     } else if (sectionName === 'profile') {
         loadUserProfile();
     } else if (sectionName === 'admin' && isAdmin) {
@@ -1907,5 +1908,200 @@ window.mobileShowSection = function(sectionName) {
         loadAdminData();
     }
 };
+// ===== TEAM CHAT SYSTEM =====
+let currentTeamChannel = null;
+
+// Load team messages for specific channel
+async function loadTeamMessages() {
+    if (!currentTeamChannel) {
+        document.getElementById('teamMessagesContainer').innerHTML = 
+            '<p style="text-align: center; padding: 30px; color: #999;">Select your team channel above to view messages</p>';
+        return;
+    }
+
+    try {
+        const q = query(
+            collection(db, 'teamMessages'),
+            where('team', '==', currentTeamChannel),
+            orderBy('timestamp', 'desc')
+        );
+        const querySnapshot = await getDocs(q);
+        
+        const messagesContainer = document.getElementById('teamMessagesContainer');
+        
+        if (querySnapshot.empty) {
+            messagesContainer.innerHTML = '<p style="text-align: center; padding: 30px; color: #999;">No messages yet. Be the first to post to your team!</p>';
+            return;
+        }
+
+        let html = '';
+        querySnapshot.forEach((doc) => {
+            const msg = doc.data();
+            const messageId = doc.id;
+            const date = new Date(msg.timestamp);
+            const timeAgo = getTimeAgo(date);
+            
+            const photoURL = msg.photoURL || 
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(msg.userName)}&background=9BFB02&color=000&size=40`;
+            
+            const deleteBtn = isAdmin 
+                ? `<button class="delete-message-btn" onclick="deleteTeamMessage('${messageId}')">Delete</button>`
+                : '';
+            
+            html += `
+                <div class="message-item">
+                    <div class="message-header">
+                        <div style="display: flex; align-items: center;">
+                            <img src="${photoURL}" class="profile-photo small" alt="${msg.userName}">
+                            <span class="message-author clickable-name" onclick="viewUserProfile('${msg.userId}')">${msg.userName}</span>
+                        </div>
+                        <div>
+                            <span class="message-timestamp">${timeAgo}</span>
+                            ${deleteBtn}
+                        </div>
+                    </div>
+                    <div class="message-text">${escapeHtml(msg.text)}</div>
+                </div>
+            `;
+        });
+        
+        messagesContainer.innerHTML = html;
+    } catch (error) {
+        console.error('Load team messages error:', error);
+        document.getElementById('teamMessagesContainer').innerHTML = 
+            '<p style="text-align: center; padding: 30px; color: #ff6b6b;">Error loading messages</p>';
+    }
+}
+
+window.switchTeamChannel = function(teamColor) {
+    currentTeamChannel = teamColor;
+    
+    // Update button states
+    document.querySelectorAll('.team-channel-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    // Show channel name
+    const teamNames = {
+        red: '🔴 Red Team',
+        blue: '🔵 Blue Team',
+        green: '🟢 Green Team',
+        yellow: '🟡 Yellow Team',
+        purple: '🟣 Purple Team',
+        orange: '🟠 Orange Team',
+        pink: '🩷 Pink Team',
+        teal: '🩵 Teal Team'
+    };
+    document.getElementById('currentChannelName').textContent = `Current Channel: ${teamNames[teamColor]}`;
+    
+    // Show message input if user is on this team
+    if (currentUser.team === teamColor || isAdmin) {
+        document.getElementById('teamMessageInput').style.display = 'block';
+    } else {
+        document.getElementById('teamMessageInput').style.display = 'none';
+    }
+    
+    loadTeamMessages();
+};
+
+window.postTeamMessage = async function() {
+    const input = document.getElementById('teamMessageText');
+    const text = input.value.trim();
+    
+    if (!text) {
+        alert('Please enter a message!');
+        return;
+    }
+    
+    if (text.length > 500) {
+        alert('Message too long! Keep it under 500 characters.');
+        return;
+    }
+    
+    if (!currentTeamChannel) {
+        alert('Please select a team channel first!');
+        return;
+    }
+    
+    // Verify user is on this team (or admin)
+    if (currentUser.team !== currentTeamChannel && !isAdmin) {
+        alert('You can only post to your own team channel!');
+        return;
+    }
+    
+    const btn = document.getElementById('postTeamMessageBtn');
+    btn.disabled = true;
+    btn.textContent = 'Posting...';
+    
+    try {
+        await addDoc(collection(db, 'teamMessages'), {
+            text: text,
+            userName: currentUser.name,
+            userId: currentUser.uid,
+            team: currentTeamChannel,
+            photoURL: currentUser.photoURL || null,
+            timestamp: new Date().toISOString()
+        });
+        
+        input.value = '';
+        document.getElementById('teamCharCounter').textContent = '0 / 500';
+        loadTeamMessages();
+    } catch (error) {
+        console.error('Post team message error:', error);
+        alert('Failed to post message: ' + error.message);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '📤 Post to Team';
+    }
+};
+
+window.deleteTeamMessage = async function(messageId) {
+    if (!isAdmin) return;
+    
+    if (!confirm('Delete this team message?')) return;
+    
+    try {
+        await deleteDoc(doc(db, 'teamMessages', messageId));
+        loadTeamMessages();
+    } catch (error) {
+        console.error('Delete team message error:', error);
+        alert('Failed to delete message');
+    }
+};
+
+// Initialize team chat when locker room loads
+function initTeamChat() {
+    // Show user's team channel button
+    if (currentUser.team && currentUser.team !== 'none') {
+        const userTeamBtn = document.querySelector(`.team-channel-btn.team-${currentUser.team}`);
+        if (userTeamBtn) {
+            userTeamBtn.style.display = 'block';
+            userTeamBtn.classList.add('active');
+            currentTeamChannel = currentUser.team;
+            switchTeamChannel(currentUser.team);
+        }
+    }
+    
+    // If admin, show all team buttons
+    if (isAdmin) {
+        document.querySelectorAll('.team-channel-btn').forEach(btn => {
+            btn.style.display = 'block';
+        });
+    }
+}
+
+// Character counter for team messages
+document.addEventListener('DOMContentLoaded', function() {
+    const teamMessageInput = document.getElementById('teamMessageText');
+    if (teamMessageInput) {
+        teamMessageInput.addEventListener('input', function() {
+            const counter = document.getElementById('teamCharCounter');
+            const length = this.value.length;
+            counter.textContent = `${length} / 500`;
+            counter.classList.toggle('warning', length > 450);
+        });
+    }
+});
 // Initialize score display
 
