@@ -1900,8 +1900,9 @@ window.mobileShowSection = function(sectionName) {
     } else if (sectionName === 'teams') {
         loadTeamsPage();
     } else if (sectionName === 'locker') {
-        loadWeeklyChallenge();
-        loadTeamMessages();
+         loadWeeklyChallenge();
+        loadMessages();
+        initTeamChat();
     } else if (sectionName === 'profile') {
         loadUserProfile();
     } else if (sectionName === 'admin' && isAdmin) {
