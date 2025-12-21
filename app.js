@@ -1,11 +1,5 @@
 // Reset 2026 - Main Application JavaScript
 // CrossFit Prosperity - Nutrition & Fitness Challenge Tracker
-const usersRef = collection(db, 'users');
-const usersSnapshot = await getDocs(usersRef);
-for (const doc of usersSnapshot.docs) {
-    await updateDoc(doc.ref, { totalPoints: 0 });
-}
-console.log('All points reset to 0!');
 // Import Firebase modules
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
