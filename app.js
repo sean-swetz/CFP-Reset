@@ -63,9 +63,14 @@ function showApp() {
     document.getElementById('app').style.display = 'block';
     document.getElementById('userGreeting').textContent = `Welcome, ${currentUser.name}!${isAdmin ? ' (Admin)' : ''}`;
     
+    
     if (isAdmin) {
         document.getElementById('adminNavBtn').style.display = 'block';
     }
+    // Show admin link in mobile menu
+if (isAdmin) {
+    document.getElementById('mobileAdminLink').style.display = 'block';
+}
     
     checkCheckinWindow();
     loadLeaderboard();
@@ -1861,6 +1866,45 @@ window.deleteCriteria = async function(id, name) {
     } catch (error) {
         console.error('Delete criteria error:', error);
         alert('Failed to delete: ' + error.message);
+    }
+};
+// ===== MOBILE MENU =====
+window.toggleMobileMenu = function() {
+    const menu = document.getElementById('mobileNavMenu');
+    const overlay = document.getElementById('mobileNavOverlay');
+    const hamburger = document.getElementById('hamburgerMenu');
+    
+    menu.classList.toggle('active');
+    overlay.classList.toggle('active');
+    hamburger.classList.toggle('active');
+};
+
+window.mobileShowSection = function(sectionName) {
+    // Close mobile menu
+    toggleMobileMenu();
+    
+    // Show section
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.mobile-nav-link').forEach(l => l.classList.remove('active'));
+    
+    document.getElementById(sectionName).classList.add('active');
+    event.target.classList.add('active');
+
+    if (sectionName === 'checkin') {
+        loadCheckInCriteria();
+    }
+    if (sectionName === 'leaderboard') {
+        loadLeaderboard();
+    } else if (sectionName === 'teams') {
+        loadTeamsPage();
+    } else if (sectionName === 'locker') {
+        loadWeeklyChallenge();
+        loadTeamMessages();
+    } else if (sectionName === 'profile') {
+        loadUserProfile();
+    } else if (sectionName === 'admin' && isAdmin) {
+        loadAdminData();
     }
 };
 // Initialize score display
