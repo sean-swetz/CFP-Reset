@@ -318,66 +318,6 @@ document.getElementById('checkinForm').addEventListener('submit', async (e) => {
         btn.textContent = 'Submit Check-In';
     }
 });
-// Check-in Form
-document.getElementById('checkinForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    if (!currentUser) return;
-
-    const btn = document.getElementById('checkinBtn');
-    btn.disabled = true;
-    btn.textContent = 'Submitting...';
-
-    const protein = document.querySelectorAll('.protein-check:checked').length;
-    const water = document.querySelectorAll('.water-check:checked').length;
-    const classes = document.getElementById('classes').checked ? 1 : 0;
-    const recovery = document.querySelectorAll('.recovery-check:checked').length;
-    const weekly = document.getElementById('weekly').checked ? 1 : 0;
-    const alcohol = document.querySelectorAll('.alcohol-check:checked').length;
-    const late = document.querySelectorAll('.late-check:checked').length;
-    const missed = document.getElementById('missed').checked ? 1 : 0;
-
-    const weeklyScore = (protein * 5) + (water * 5) + (classes * 15) + 
-                       (recovery * 3) + (weekly * 20) - (alcohol * 5) - 
-                       (late * 3) - (missed * 10);
-
-    try {
-        const userRef = doc(db, 'users', currentUser.uid);
-        await updateDoc(userRef, {
-            totalPoints: increment(weeklyScore),
-            lastCheckin: new Date().toISOString()
-        });
-
-        await addDoc(collection(db, 'checkins'), {
-            userId: currentUser.uid,
-            name: currentUser.name,
-            email: currentUser.email,
-            weeklyScore: weeklyScore,
-            details: { protein, water, classes, recovery, weekly, alcohol, late, missed },
-            timestamp: new Date().toISOString()
-        });
-
-        currentUser.totalPoints = (currentUser.totalPoints || 0) + weeklyScore;
-
-        const successMsg = document.getElementById('checkinSuccess');
-        successMsg.textContent = `Check-in submitted! You earned ${weeklyScore} points this week. Your total is now ${currentUser.totalPoints} points.`;
-        successMsg.style.display = 'block';
-        
-        document.getElementById('checkinForm').reset();
-        calculateDynamicScore();
-
-        setTimeout(() => {
-            successMsg.style.display = 'none';
-        }, 5000);
-
-    } catch (error) {
-        console.error('Check-in error:', error);
-        alert('Failed to submit check-in. Please try again.');
-    } finally {
-        btn.disabled = false;
-        btn.textContent = 'Submit Check-In';
-    }
-});
 
 // Check-in window control
 async function checkCheckinWindow() {
