@@ -475,8 +475,11 @@ leaderboardData.forEach((member, index) => {
     mobileContainer.appendChild(card);
 });
 
-// Insert mobile view after table
-tbody.parentElement.parentElement.appendChild(mobileContainer);
+// Insert mobile view in the card, after the table
+const leaderboardCard = tbody.closest('.card');
+if (leaderboardCard) {
+    leaderboardCard.appendChild(mobileContainer);
+}
 
     } catch (error) {
         console.error('Leaderboard error:', error);
