@@ -111,233 +111,15 @@
                 
                 <div class="success-message" id="checkinSuccess"></div>
                 <form id="checkinForm">
-                    <h3 style="color: #9BFB02; margin: 30px 0 15px 0;">💪 Earn Points</h3>
-                    
-                    <div class="challenge-item">
-                        <div class="challenge-header">
-                            <span class="challenge-name">Hit Protein Goal</span>
-                            <span class="challenge-points">+5 pts/day</span>
-                        </div>
-                        <div class="days-grid">
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="protein_mon" class="protein-check">
-                                <label>Mon</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="protein_tue" class="protein-check">
-                                <label>Tue</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="protein_wed" class="protein-check">
-                                <label>Wed</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="protein_thu" class="protein-check">
-                                <label>Thu</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="protein_fri" class="protein-check">
-                                <label>Fri</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="protein_sat" class="protein-check">
-                                <label>Sat</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="protein_sun" class="protein-check">
-                                <label>Sun</label>
-                            </div>
-                        </div>
-                    </div>
+                  <div id="dynamicCriteria">
+    <p style="text-align: center; padding: 30px;">Loading criteria...</p>
+</div>
 
-                    <div class="challenge-item">
-                        <div class="challenge-header">
-                            <span class="challenge-name">Hit Water Goal</span>
-                            <span class="challenge-points">+5 pts/day</span>
-                        </div>
-                        <div class="days-grid">
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="water_mon" class="water-check">
-                                <label>Mon</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="water_tue" class="water-check">
-                                <label>Tue</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="water_wed" class="water-check">
-                                <label>Wed</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="water_thu" class="water-check">
-                                <label>Thu</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="water_fri" class="water-check">
-                                <label>Fri</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="water_sat" class="water-check">
-                                <label>Sat</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="water_sun" class="water-check">
-                                <label>Sun</label>
-                            </div>
-                        </div>
-                    </div>
+<div class="total-score" id="totalScore">
+    Total Weekly Score: 0 points
+</div>
 
-                    <div class="challenge-item">
-                        <div class="challenge-header">
-                            <span class="challenge-name">Attended 3+ Classes This Week</span>
-                            <span class="challenge-points">+15 pts</span>
-                        </div>
-                        <div class="single-checkbox">
-                            <input type="checkbox" id="classes">
-                            <label for="classes">Completed</label>
-                        </div>
-                    </div>
-
-                    <div class="challenge-item">
-                        <div class="challenge-header">
-                            <span class="challenge-name">Stretching/Yoga/Recovery</span>
-                            <span class="challenge-points">+3 pts/day</span>
-                        </div>
-                        <div class="days-grid">
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="recovery_mon" class="recovery-check">
-                                <label>Mon</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="recovery_tue" class="recovery-check">
-                                <label>Tue</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="recovery_wed" class="recovery-check">
-                                <label>Wed</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="recovery_thu" class="recovery-check">
-                                <label>Thu</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="recovery_fri" class="recovery-check">
-                                <label>Fri</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="recovery_sat" class="recovery-check">
-                                <label>Sat</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="recovery_sun" class="recovery-check">
-                                <label>Sun</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="challenge-item">
-                        <div class="challenge-header">
-                            <span class="challenge-name">Completed Weekly Challenge</span>
-                            <span class="challenge-points">+20 pts</span>
-                        </div>
-                        <div class="single-checkbox">
-                            <input type="checkbox" id="weekly">
-                            <label for="weekly">Completed</label>
-                        </div>
-                    </div>
-
-                    <h3 style="color: #ff6b6b; margin: 30px 0 15px 0;">⚠️ Deductions</h3>
-
-                    <div class="challenge-item deduction-item">
-                        <div class="challenge-header">
-                            <span class="challenge-name">Consumed Alcohol</span>
-                            <span class="challenge-points deduction-points">-5 pts/day</span>
-                        </div>
-                        <div class="days-grid">
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="alcohol_mon" class="alcohol-check">
-                                <label>Mon</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="alcohol_tue" class="alcohol-check">
-                                <label>Tue</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="alcohol_wed" class="alcohol-check">
-                                <label>Wed</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="alcohol_thu" class="alcohol-check">
-                                <label>Thu</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="alcohol_fri" class="alcohol-check">
-                                <label>Fri</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="alcohol_sat" class="alcohol-check">
-                                <label>Sat</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="alcohol_sun" class="alcohol-check">
-                                <label>Sun</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="challenge-item deduction-item">
-                        <div class="challenge-header">
-                            <span class="challenge-name">Late to Class</span>
-                            <span class="challenge-points deduction-points">-3 pts/occurrence</span>
-                        </div>
-                        <div class="days-grid">
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="late_mon" class="late-check">
-                                <label>Mon</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="late_tue" class="late-check">
-                                <label>Tue</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="late_wed" class="late-check">
-                                <label>Wed</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="late_thu" class="late-check">
-                                <label>Thu</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="late_fri" class="late-check">
-                                <label>Fri</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="late_sat" class="late-check">
-                                <label>Sat</label>
-                            </div>
-                            <div class="day-checkbox">
-                                <input type="checkbox" id="late_sun" class="late-check">
-                                <label>Sun</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="challenge-item deduction-item">
-                        <div class="challenge-header">
-                            <span class="challenge-name">Missed Weekly Check-In</span>
-                            <span class="challenge-points deduction-points">-10 pts</span>
-                        </div>
-                        <div class="single-checkbox deduction">
-                            <input type="checkbox" id="missed">
-                            <label for="missed">Yes, I missed last week</label>
-                        </div>
-                    </div>
-
-                    <div class="total-score" id="totalScore">
-                        Total Weekly Score: 0 points
-                    </div>
-
-                    <button type="submit" class="btn" id="checkinBtn">Submit Check-In</button>
+<button type="submit" class="btn" id="checkinBtn">Submit Check-In</button>
                 </form>
             </div>
         </div>
@@ -537,7 +319,18 @@
                         </button>
                     </div>
                 </div>
-
+<div style="margin-top: 30px;">
+    <h3>📝 Manage Check-In Criteria</h3>
+    <p style="margin-bottom: 15px; color: #666;">Add, edit, or remove criteria that members check in for each week.</p>
+    
+    <button class="btn" onclick="addNewCriteria()" style="margin-bottom: 20px;">
+        ➕ Add New Criteria
+    </button>
+    
+    <div id="criteriaList" style="margin-top: 20px;">
+        <p style="text-align: center; padding: 20px;">Loading criteria...</p>
+    </div>
+</div>
                 <div style="margin-top: 30px;">
                     <h3>Customize Team Names</h3>
                     <p style="margin-bottom: 15px; color: #666;">Give each team a custom name while keeping their colors!</p>
