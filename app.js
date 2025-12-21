@@ -80,7 +80,7 @@ if (isAdmin) {
     checkCheckinWindow();
     loadLeaderboard();
     loadCheckInCriteria();
-    showNotificationBanner();
+    //showNotificationBanner();
 }
 
 function showAuthPage() {
