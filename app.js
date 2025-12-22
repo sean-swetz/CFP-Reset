@@ -33,6 +33,10 @@ const ADMIN_EMAILS = [
 // ===== GLOBAL STATE =====
 let currentUser = null;
 let isAdmin = false;
+let allLeaderboardData = [];
+let currentPage = 1;
+const ITEMS_PER_PAGE = 10;
+let isSearching = false;
 
 // ===== INITIALIZATION =====
 document.getElementById('loading').style.display = 'none';
@@ -378,10 +382,6 @@ window.toggleCheckinWindow = async function(open) {
 };
 
 // ===== LEADERBOARD WITH PAGINATION =====
-let allLeaderboardData = [];
-let currentPage = 1;
-const ITEMS_PER_PAGE = 10;
-let isSearching = false;
 
 async function loadLeaderboard() {
     const tbody = document.getElementById('leaderboardBody');
