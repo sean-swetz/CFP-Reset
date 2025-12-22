@@ -431,6 +431,27 @@ async function loadLeaderboard() {
         </td></tr>`;
     }
 }
+function displayTeamStandings(teamTotals) {
+    const teamLeaderboard = document.getElementById('teamLeaderboard');
+    
+    const teams = Object.entries(teamTotals)
+        .map(([name, data]) => ({ name, ...data }))
+        .filter(team => team.members > 0)
+        .sort((a, b) => b.points - a.points);
+
+    if (teams.length === 0) {
+        teamLeaderboard.innerHTML = '<p style="text-align: center; color: #999;">No teams assigned yet</p>';
+        return;
+    }
+
+    teamLeaderboard.innerHTML = teams.map(team => `
+        <div class="team-card team-${team.name}">
+            <h3>${team.name.toUpperCase()} TEAM</h3>
+            <div class="team-stat">${team.points} pts</div>
+            <div class="team-members">${team.members} member${team.members !== 1 ? 's' : ''}</div>
+        </div>
+    `).join('');
+}
 
 function displayLeaderboardPage(dataToDisplay = null) {
     const data = dataToDisplay || allLeaderboardData;
