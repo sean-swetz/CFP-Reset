@@ -39,7 +39,9 @@ const ITEMS_PER_PAGE = 10;
 let isSearching = false;
 
 // ===== INITIALIZATION =====
-document.getElementById('loading').style.display = 'none';
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('loading').style.display = 'none';
+});
 
 // ===== AUTHENTICATION =====
 onAuthStateChanged(auth, async (user) => {
