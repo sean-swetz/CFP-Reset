@@ -228,7 +228,11 @@
                     <h3 style="color: #3146E7; margin-bottom: 15px;">Team Standings</h3>
                     <div class="team-leaderboard" id="teamLeaderboard"></div>
                 </div>
-
+                <div style="margin-bottom: 20px;">
+    <input type="text" id="leaderboardSearch" placeholder="🔍 Search by name..." 
+           style="width: 100%; max-width: 400px; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 1em;"
+           oninput="searchLeaderboard(this.value)">
+</div>
                 <h3 style="color: #3146E7; margin-bottom: 15px;">Individual Rankings</h3>
                 <table class="leaderboard-table">
                     <thead>
@@ -243,7 +247,15 @@
                         <tr><td colspan="4" style="text-align: center; padding: 30px;">Loading...</td></tr>
                     </tbody>
                 </table>
-                
+                <div id="leaderboardPagination" style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 20px;">
+    <button class="btn btn-secondary" onclick="changePage(-1)" id="prevBtn" style="padding: 10px 20px;">
+        ← Previous
+    </button>
+    <span id="pageInfo" style="font-weight: 600; color: #666;">Page 1</span>
+    <button class="btn btn-secondary" onclick="changePage(1)" id="nextBtn" style="padding: 10px 20px;">
+        Next →
+    </button>
+</div>
                 <div id="leaderboardMobile" class="leaderboard-mobile"></div>
             </div>
         </div>
