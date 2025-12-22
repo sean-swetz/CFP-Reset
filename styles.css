@@ -1568,3 +1568,14 @@ input[type="number"]:focus {
     color: #666;
     font-size: 0.9em;
 }
+/* Leaderboard Search */
+#leaderboardSearch:focus {
+    outline: none;
+    border-color: #9BFB02;
+}
+
+/* Pagination */
+#leaderboardPagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
