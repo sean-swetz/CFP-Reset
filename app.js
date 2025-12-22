@@ -417,13 +417,14 @@ async function loadLeaderboard() {
         });
 
         allLeaderboardData.sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
-        displayTeamStandings(teamTotals);
 
         // Reset to page 1 when data reloads
         currentPage = 1;
         isSearching = false;
+        
+        displayTeamStandings(teamTotals);
         displayLeaderboardPage();
-
+        
     } catch (error) {
         console.error('Leaderboard error:', error);
         tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 30px; color: #ff6b6b;">
