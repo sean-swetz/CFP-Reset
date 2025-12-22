@@ -893,7 +893,11 @@ async function loadMessages() {
     }
 }
 
-window.postMessage = async function() {
+
+    window.postMessage = async function() {
+    console.log('Current user:', currentUser);  // ← ADD THIS LINE
+    console.log('Auth user:', auth.currentUser); // ← ADD THIS LINE
+    
     const input = document.getElementById('messageInput');
     const text = input.value.trim();
     
