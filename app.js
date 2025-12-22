@@ -377,7 +377,12 @@ window.toggleCheckinWindow = async function(open) {
     }
 };
 
-// ===== LEADERBOARD =====
+// ===== LEADERBOARD WITH PAGINATION =====
+let allLeaderboardData = [];
+let currentPage = 1;
+const ITEMS_PER_PAGE = 10;
+let isSearching = false;
+
 async function loadLeaderboard() {
     const tbody = document.getElementById('leaderboardBody');
     tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px;">Loading...</td></tr>';
@@ -386,7 +391,7 @@ async function loadLeaderboard() {
         const q = query(collection(db, 'users'));
         const querySnapshot = await getDocs(q);
         
-        const leaderboardData = [];
+        allLeaderboardData = [];
         const teamTotals = {
             red: { points: 0, members: 0 },
             blue: { points: 0, members: 0 },
@@ -401,7 +406,7 @@ async function loadLeaderboard() {
         querySnapshot.forEach((doc) => {
             const userData = doc.data();
             if (!userData.hiddenFromLeaderboard) {
-                leaderboardData.push({ uid: doc.id, ...userData });
+                allLeaderboardData.push({ uid: doc.id, ...userData });
                 
                 const team = userData.team || 'none';
                 if (teamTotals[team]) {
@@ -411,74 +416,14 @@ async function loadLeaderboard() {
             }
         });
 
-        leaderboardData.sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
+        allLeaderboardData.sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
         displayTeamStandings(teamTotals);
 
-        tbody.innerHTML = '';
-        if (leaderboardData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px; color: #999;">No check-ins yet. Be the first!</td></tr>';
-            return;
-        }
+        // Reset to page 1 when data reloads
+        currentPage = 1;
+        isSearching = false;
+        displayLeaderboardPage();
 
-        leaderboardData.forEach((member, index) => {
-            const row = tbody.insertRow();
-            const rankClass = index < 3 ? `rank-${index + 1}` : '';
-            const isCurrentUser = currentUser && member.uid === currentUser.uid;
-            const teamBadge = member.team && member.team !== 'none' 
-                ? `<span class="team-badge team-${member.team}">${member.team.toUpperCase()}</span>`
-                : '';
-            
-            const photoURL = member.photoURL || 
-                `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=9BFB02&color=000&size=40`;
-            
-            row.style.background = isCurrentUser ? '#e8f5e9' : '';
-            row.style.cursor = 'pointer';
-            row.classList.add('profile-clickable');
-            
-            row.onclick = function() {
-                viewUserProfile(member.uid);
-            };
-            
-            row.innerHTML = `
-                <td><span class="rank ${rankClass}">${index + 1}</span></td>
-                <td>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <img src="${photoURL}" class="profile-photo small" alt="${member.name}">
-                        <span>${member.name}${isCurrentUser ? ' (You)' : ''}</span>
-                    </div>
-                </td>
-                <td>${teamBadge || '<span style="color: #999;">No Team</span>'}</td>
-                <td><strong>${member.totalPoints || 0} pts</strong></td>
-            `;
-        });
-        // After building the table, add mobile view
-// Build mobile view
-        const mobileDiv = document.getElementById('leaderboardMobile');
-        if (mobileDiv) {
-            mobileDiv.innerHTML = '';
-            leaderboardData.forEach((member, index) => {
-                const rankClass = index < 3 ? `rank-${index + 1}` : '';
-                const isCurrentUser = currentUser && member.uid === currentUser.uid;
-                const teamBadge = member.team && member.team !== 'none' 
-                    ? `<span class="team-badge team-${member.team}">${member.team.toUpperCase()}</span>`
-                    : '';
-                
-                const photoURL = member.photoURL || 
-                    `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=9BFB02&color=000&size=60`;
-                
-                mobileDiv.innerHTML += `
-                    <div class="leaderboard-card ${isCurrentUser ? 'current-user' : ''} profile-clickable" onclick="viewUserProfile('${member.uid}')">
-                        <div class="rank-mobile ${rankClass}">${index + 1}</div>
-                        <img src="${photoURL}" class="profile-photo" alt="${member.name}">
-                        <div class="user-info-mobile">
-                            <div class="user-name-mobile">${member.name}${isCurrentUser ? ' (You)' : ''}</div>
-                            ${teamBadge}
-                        </div>
-                        <div class="user-points-mobile">${member.totalPoints || 0}</div>
-                    </div>
-                `;
-            });
-        }
     } catch (error) {
         console.error('Leaderboard error:', error);
         tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 30px; color: #ff6b6b;">
@@ -487,27 +432,148 @@ async function loadLeaderboard() {
     }
 }
 
-function displayTeamStandings(teamTotals) {
-    const teamLeaderboard = document.getElementById('teamLeaderboard');
+function displayLeaderboardPage(dataToDisplay = null) {
+    const data = dataToDisplay || allLeaderboardData;
+    const tbody = document.getElementById('leaderboardBody');
+    const mobileDiv = document.getElementById('leaderboardMobile');
     
-    const teams = Object.entries(teamTotals)
-        .map(([name, data]) => ({ name, ...data }))
-        .filter(team => team.members > 0)
-        .sort((a, b) => b.points - a.points);
-
-    if (teams.length === 0) {
-        teamLeaderboard.innerHTML = '<p style="text-align: center; color: #999;">No teams assigned yet</p>';
+    if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px; color: #999;">No members found</td></tr>';
+        if (mobileDiv) mobileDiv.innerHTML = '';
+        updatePaginationControls(0);
         return;
     }
 
-    teamLeaderboard.innerHTML = teams.map(team => `
-        <div class="team-card team-${team.name}">
-            <h3>${team.name.toUpperCase()} TEAM</h3>
-            <div class="team-stat">${team.points} pts</div>
-            <div class="team-members">${team.members} member${team.members !== 1 ? 's' : ''}</div>
-        </div>
-    `).join('');
+    // Calculate pagination
+    const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const pageData = data.slice(startIndex, endIndex);
+
+    // Build desktop table
+    tbody.innerHTML = '';
+    pageData.forEach((member, pageIndex) => {
+        const actualIndex = startIndex + pageIndex;
+        const row = tbody.insertRow();
+        const rankClass = actualIndex < 3 ? `rank-${actualIndex + 1}` : '';
+        const isCurrentUser = currentUser && member.uid === currentUser.uid;
+        const teamBadge = member.team && member.team !== 'none' 
+            ? `<span class="team-badge team-${member.team}">${member.team.toUpperCase()}</span>`
+            : '';
+        
+        const photoURL = member.photoURL || 
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=9BFB02&color=000&size=40`;
+        
+        row.style.background = isCurrentUser ? '#e8f5e9' : '';
+        row.style.cursor = 'pointer';
+        row.classList.add('profile-clickable');
+        
+        row.onclick = function() {
+            viewUserProfile(member.uid);
+        };
+        
+        row.innerHTML = `
+            <td><span class="rank ${rankClass}">${actualIndex + 1}</span></td>
+            <td>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <img src="${photoURL}" class="profile-photo small" alt="${member.name}">
+                    <span>${member.name}${isCurrentUser ? ' (You)' : ''}</span>
+                </div>
+            </td>
+            <td>${teamBadge || '<span style="color: #999;">No Team</span>'}</td>
+            <td><strong>${member.totalPoints || 0} pts</strong></td>
+        `;
+    });
+
+    // Build mobile view
+    if (mobileDiv) {
+        mobileDiv.innerHTML = '';
+        pageData.forEach((member, pageIndex) => {
+            const actualIndex = startIndex + pageIndex;
+            const rankClass = actualIndex < 3 ? `rank-${actualIndex + 1}` : '';
+            const isCurrentUser = currentUser && member.uid === currentUser.uid;
+            const teamBadge = member.team && member.team !== 'none' 
+                ? `<span class="team-badge team-${member.team}">${member.team.toUpperCase()}</span>`
+                : '';
+            
+            const photoURL = member.photoURL || 
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=9BFB02&color=000&size=60`;
+            
+            mobileDiv.innerHTML += `
+                <div class="leaderboard-card ${isCurrentUser ? 'current-user' : ''} profile-clickable" onclick="viewUserProfile('${member.uid}')">
+                    <div class="rank-mobile ${rankClass}">${actualIndex + 1}</div>
+                    <img src="${photoURL}" class="profile-photo" alt="${member.name}">
+                    <div class="user-info-mobile">
+                        <div class="user-name-mobile">${member.name}${isCurrentUser ? ' (You)' : ''}</div>
+                        ${teamBadge}
+                    </div>
+                    <div class="user-points-mobile">${member.totalPoints || 0}</div>
+                </div>
+            `;
+        });
+    }
+
+    updatePaginationControls(totalPages);
 }
+
+function updatePaginationControls(totalPages) {
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const pageInfo = document.getElementById('pageInfo');
+    const pagination = document.getElementById('leaderboardPagination');
+
+    if (!prevBtn || !nextBtn || !pageInfo || !pagination) return;
+
+    if (totalPages <= 1 || isSearching) {
+        pagination.style.display = 'none';
+        return;
+    }
+
+    pagination.style.display = 'flex';
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage === totalPages;
+    pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+}
+
+window.changePage = function(direction) {
+    currentPage += direction;
+    displayLeaderboardPage();
+    
+    // Scroll to top of leaderboard
+    document.getElementById('leaderboard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+window.searchLeaderboard = function(searchTerm) {
+    searchTerm = searchTerm.toLowerCase().trim();
+    
+    if (!searchTerm) {
+        // Clear search - show paginated view
+        isSearching = false;
+        currentPage = 1;
+        displayLeaderboardPage();
+        return;
+    }
+
+    // Filter results
+    isSearching = true;
+    const filteredData = allLeaderboardData.filter(member => 
+        member.name.toLowerCase().includes(searchTerm)
+    );
+
+    // Show all filtered results (no pagination during search)
+    const tbody = document.getElementById('leaderboardBody');
+    const mobileDiv = document.getElementById('leaderboardMobile');
+    
+    if (filteredData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px; color: #999;">No members found matching your search</td></tr>';
+        if (mobileDiv) mobileDiv.innerHTML = '';
+        document.getElementById('leaderboardPagination').style.display = 'none';
+        return;
+    }
+
+    // Show all search results (no pagination)
+    displayLeaderboardPage(filteredData);
+};
 
 // ===== TEAMS PAGE =====
 async function loadTeamsPage() {
