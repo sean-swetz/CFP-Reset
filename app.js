@@ -895,7 +895,6 @@ async function loadMessages() {
 
 
     window.postMessage = async function() {
-    
     const input = document.getElementById('messageInput');
     const text = input.value.trim();
     
@@ -914,11 +913,6 @@ async function loadMessages() {
     btn.textContent = 'Posting...';
     
     try {
-        console.log('Auth object:', auth);
-        console.log('Current auth user:', auth.currentUser);
-        console.log('Current user variable:', currentUser);
-        
-        
         await addDoc(collection(db, 'messages'), {
             text: text,
             userName: currentUser.name,
