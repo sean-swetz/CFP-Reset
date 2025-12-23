@@ -2129,7 +2129,7 @@ window.postTeamMessage = async function() {
     btn.textContent = 'Posting...';
     
     try {
-    await addDoc(collection(db, 'teamMessages'), {
+        await addDoc(collection(db, 'teamMessages'), {
             text: text,
             userName: currentUser.name,
             userId: currentUser.uid,
