@@ -895,8 +895,6 @@ async function loadMessages() {
 
 
     window.postMessage = async function() {
-    console.log('Current user:', currentUser);  // ← ADD THIS LINE
-    console.log('Auth user:', auth.currentUser); // ← ADD THIS LINE
     
     const input = document.getElementById('messageInput');
     const text = input.value.trim();
@@ -916,7 +914,7 @@ async function loadMessages() {
     btn.textContent = 'Posting...';
     
     try {
-           console.log('Auth object:', auth);
+        console.log('Auth object:', auth);
         console.log('Current auth user:', auth.currentUser);
         console.log('Current user variable:', currentUser);
         
