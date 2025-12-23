@@ -2129,8 +2129,6 @@ window.postTeamMessage = async function() {
     btn.textContent = 'Posting...';
     
     try {
-    
-    
     await addDoc(collection(db, 'teamMessages'), {
             text: text,
             userName: currentUser.name,
@@ -2154,7 +2152,6 @@ window.postTeamMessage = async function() {
 
 window.deleteTeamMessage = async function(messageId) {
     if (!isAdmin) return;
-    
     if (!confirm('Delete this team message?')) return;
     
     try {
