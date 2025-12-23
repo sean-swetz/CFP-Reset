@@ -2129,10 +2129,7 @@ window.postTeamMessage = async function() {
     btn.textContent = 'Posting...';
     
     try {
-        try {
-    console.log('Posting to team:', currentTeamChannel);
-    console.log('User team:', currentUser.team);
-    console.log('Match?', currentTeamChannel === currentUser.team);
+    
     
     await addDoc(collection(db, 'teamMessages'), {
             text: text,
