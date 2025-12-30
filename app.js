@@ -2021,68 +2021,6 @@ window.mobileShowSection = function(sectionName) {
 // ===== TEAM CHAT SYSTEM =====
 let currentTeamChannel = null;
 
-// Load team messages for specific channel
-async function loadTeamMessages() {
-    if (!currentTeamChannel) {
-        document.getElementById('teamMessagesContainer').innerHTML = 
-            '<p style="text-align: center; padding: 30px; color: #999;">Select your team channel above to view messages</p>';
-        return;
-    }
-
-    try {
-        const q = query(
-            collection(db, 'teamMessages'),
-            where('team', '==', currentTeamChannel),
-            orderBy('timestamp', 'desc')
-        );
-        const querySnapshot = await getDocs(q);
-        
-        const messagesContainer = document.getElementById('teamMessagesContainer');
-        
-        if (querySnapshot.empty) {
-            messagesContainer.innerHTML = '<p style="text-align: center; padding: 30px; color: #999;">No messages yet. Be the first to post to your team!</p>';
-            return;
-        }
-
-        let html = '';
-        querySnapshot.forEach((doc) => {
-            const msg = doc.data();
-            const messageId = doc.id;
-            const date = new Date(msg.timestamp);
-            const timeAgo = getTimeAgo(date);
-            
-            const photoURL = msg.photoURL || 
-                `https://ui-avatars.com/api/?name=${encodeURIComponent(msg.userName)}&background=9BFB02&color=000&size=40`;
-            
-            const deleteBtn = isAdmin 
-                ? `<button class="delete-message-btn" onclick="deleteTeamMessage('${messageId}')">Delete</button>`
-                : '';
-            
-            html += `
-                <div class="message-item">
-                    <div class="message-header">
-                        <div style="display: flex; align-items: center;">
-                            <img src="${photoURL}" class="profile-photo small" alt="${msg.userName}">
-                            <span class="message-author clickable-name" onclick="viewUserProfile('${msg.userId}')">${msg.userName}</span>
-                        </div>
-                        <div>
-                            <span class="message-timestamp">${timeAgo}</span>
-                            ${deleteBtn}
-                        </div>
-                    </div>
-                    <div class="message-text">${escapeHtml(msg.text)}</div>
-                </div>
-            `;
-        });
-        
-        messagesContainer.innerHTML = html;
-    } catch (error) {
-        console.error('Load team messages error:', error);
-        document.getElementById('teamMessagesContainer').innerHTML = 
-            '<p style="text-align: center; padding: 30px; color: #ff6b6b;">Error loading messages</p>';
-    }
-}
-
 window.switchTeamChannel = function(teamColor) {
     currentTeamChannel = teamColor;
     
