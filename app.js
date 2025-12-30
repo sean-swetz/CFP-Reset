@@ -837,6 +837,9 @@ window.saveChallengeFromEditor = async function() {
     }
 };
 
+// ===== UPDATED MESSAGE DISPLAY FUNCTIONS =====
+
+// Updated loadMessages() for main Locker Room
 async function loadMessages() {
     try {
         const q = query(collection(db, 'messages'), orderBy('timestamp', 'desc'));
@@ -867,6 +870,14 @@ async function loadMessages() {
                 ? `<button class="delete-message-btn" onclick="deleteMessage('${messageId}')">Delete</button>`
                 : '';
             
+            // Check if message has a GIF
+            const messageContent = msg.gifUrl 
+                ? `<div class="message-gif">
+                     <img src="${msg.gifUrl}" alt="${msg.gifTitle || 'GIF'}" loading="lazy">
+                     ${msg.gifTitle ? `<div class="gif-caption">${escapeHtml(msg.gifTitle)}</div>` : ''}
+                   </div>`
+                : `<div class="message-text">${escapeHtml(msg.text)}</div>`;
+            
             html += `
                 <div class="message-item">
                     <div class="message-header">
@@ -880,7 +891,7 @@ async function loadMessages() {
                             ${deleteBtn}
                         </div>
                     </div>
-                    <div class="message-text">${escapeHtml(msg.text)}</div>
+                    ${messageContent}
                 </div>
             `;
         });
@@ -889,6 +900,76 @@ async function loadMessages() {
     } catch (error) {
         console.error('Load messages error:', error);
         document.getElementById('messagesContainer').innerHTML = 
+            '<p style="text-align: center; padding: 30px; color: #ff6b6b;">Error loading messages</p>';
+    }
+}
+
+// Updated loadTeamMessages() for team chat
+async function loadTeamMessages() {
+    if (!currentTeamChannel) {
+        document.getElementById('teamMessagesContainer').innerHTML = 
+            '<p style="text-align: center; padding: 30px; color: #999;">Select your team channel above to view messages</p>';
+        return;
+    }
+
+    try {
+        const q = query(
+            collection(db, 'teamMessages'),
+            where('team', '==', currentTeamChannel),
+            orderBy('timestamp', 'desc')
+        );
+        const querySnapshot = await getDocs(q);
+        
+        const messagesContainer = document.getElementById('teamMessagesContainer');
+        
+        if (querySnapshot.empty) {
+            messagesContainer.innerHTML = '<p style="text-align: center; padding: 30px; color: #999;">No messages yet. Be the first to post to your team!</p>';
+            return;
+        }
+
+        let html = '';
+        querySnapshot.forEach((doc) => {
+            const msg = doc.data();
+            const messageId = doc.id;
+            const date = new Date(msg.timestamp);
+            const timeAgo = getTimeAgo(date);
+            
+            const photoURL = msg.photoURL || 
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(msg.userName)}&background=9BFB02&color=000&size=40`;
+            
+            const deleteBtn = isAdmin 
+                ? `<button class="delete-message-btn" onclick="deleteTeamMessage('${messageId}')">Delete</button>`
+                : '';
+            
+            // Check if message has a GIF
+            const messageContent = msg.gifUrl 
+                ? `<div class="message-gif">
+                     <img src="${msg.gifUrl}" alt="${msg.gifTitle || 'GIF'}" loading="lazy">
+                     ${msg.gifTitle ? `<div class="gif-caption">${escapeHtml(msg.gifTitle)}</div>` : ''}
+                   </div>`
+                : `<div class="message-text">${escapeHtml(msg.text)}</div>`;
+            
+            html += `
+                <div class="message-item">
+                    <div class="message-header">
+                        <div style="display: flex; align-items: center;">
+                            <img src="${photoURL}" class="profile-photo small" alt="${msg.userName}">
+                            <span class="message-author clickable-name" onclick="viewUserProfile('${msg.userId}')">${msg.userName}</span>
+                        </div>
+                        <div>
+                            <span class="message-timestamp">${timeAgo}</span>
+                            ${deleteBtn}
+                        </div>
+                    </div>
+                    ${messageContent}
+                </div>
+            `;
+        });
+        
+        messagesContainer.innerHTML = html;
+    } catch (error) {
+        console.error('Load team messages error:', error);
+        document.getElementById('teamMessagesContainer').innerHTML = 
             '<p style="text-align: center; padding: 30px; color: #ff6b6b;">Error loading messages</p>';
     }
 }
