@@ -1580,7 +1580,6 @@ input[type="number"]:focus {
     cursor: not-allowed;
 }
 /* ===== GIPHY MODAL STYLES ===== */
-/* Add this to your styles.css file */
 
 .giphy-modal-content {
     max-width: 700px;
@@ -1588,22 +1587,55 @@ input[type="number"]:focus {
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    background: #2a2a2a;
+    color: white;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #444;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: white;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 32px;
+    cursor: pointer;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .giphy-search-bar {
     display: flex;
     gap: 10px;
     padding: 20px;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid #444;
 }
 
 .giphy-search-input {
     flex: 1 !important;
-    width: auto !important;
-    min-width: 200px !important;
     padding: 12px;
     background: #1a1a1a;
-    border: 1px solid #333;
+    border: 1px solid #555;
     border-radius: 8px;
     color: white;
     font-size: 16px;
@@ -1621,6 +1653,7 @@ input[type="number"]:focus {
     padding: 20px;
     overflow-y: auto;
     max-height: 500px;
+    background: #2a2a2a;
 }
 
 .gif-item {
@@ -1629,6 +1662,7 @@ input[type="number"]:focus {
     overflow: hidden;
     transition: transform 0.2s, box-shadow 0.2s;
     background: #1a1a1a;
+    height: 150px;
 }
 
 .gif-item:hover {
@@ -1638,14 +1672,14 @@ input[type="number"]:focus {
 
 .gif-item img {
     width: 100%;
-    height: 150px;
+    height: 100%;
     object-fit: cover;
     display: block;
 }
 
 /* MESSAGE INPUT LAYOUT */
 .message-input {
-    background: #1a1a1a;
+    background: #f8f9fa;
     border-radius: 12px;
     padding: 15px;
     margin-bottom: 20px;
@@ -1653,11 +1687,11 @@ input[type="number"]:focus {
 
 .message-input textarea {
     width: 100%;
-    background: #0d0d0d;
-    border: 1px solid #333;
+    background: white;
+    border: 2px solid #e0e0e0;
     border-radius: 8px;
     padding: 12px;
-    color: white;
+    color: #333;
     font-family: inherit;
     font-size: 15px;
     resize: vertical;
@@ -1679,6 +1713,58 @@ input[type="number"]:focus {
 .message-buttons {
     display: flex;
     gap: 10px;
+}
+
+/* GIF DISPLAY IN MESSAGES */
+.message-gif {
+    margin-top: 10px;
+    border-radius: 8px;
+    overflow: hidden;
+    max-width: 400px;
+}
+
+.message-gif img {
+    width: 100%;
+    display: block;
+    border-radius: 8px;
+}
+
+.gif-caption {
+    font-size: 0.85em;
+    color: #999;
+    font-style: italic;
+    margin-top: 5px;
+}
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 768px) {
+    .giphy-modal-content {
+        max-width: 95%;
+        max-height: 90vh;
+    }
+    
+    .giphy-results-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 8px;
+        padding: 15px;
+    }
+    
+    .gif-item {
+        height: 120px;
+    }
+    
+    .message-gif {
+        max-width: 100%;
+    }
+    
+    .message-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .message-buttons button {
+        width: 100%;
+    }
 }
 
 /* GIF DISPLAY IN MESSAGES */
