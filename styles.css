@@ -1629,16 +1629,14 @@ input[type="number"]:focus {
     gap: 10px;
     padding: 20px;
     border-bottom: 1px solid #444;
+    align-items: center;
 }
 
-.giphy-search-input {
-    flex: 1 !important;
-    padding: 12px;
-    background: #1a1a1a;
-    border: 1px solid #555;
-    border-radius: 8px;
-    color: white;
-    font-size: 16px;
+.giphy-search-bar .btn {
+    flex-shrink: 0;
+    width: auto;
+    padding: 12px 24px;
+    margin: 0;
 }
 
 .giphy-search-input:focus {
