@@ -292,13 +292,25 @@
                 <div class="messages-container" id="messagesContainer">
                     <p style="text-align: center; padding: 30px; color: #999;">Loading messages...</p>
                 </div>
-                <div class="message-input-container">
-                    <textarea id="messageInput" placeholder="Share a PR, celebrate a win, or talk some friendly trash... 💪" maxlength="500"></textarea>
-                    <div class="char-counter" id="charCounter">0 / 500</div>
-                    <button class="btn" onclick="postMessage()" id="postMessageBtn" style="margin-top: 15px;">
-                        📤 Post Message
-                    </button>
-                </div>
+           <div class="message-input">
+    <textarea 
+        id="messageInput" 
+        placeholder="Share a PR, celebrate a win, or talk some friendly trash... 💪" 
+        maxlength="500"
+        rows="3"
+    ></textarea>
+    <div class="message-input-footer">
+        <div class="char-counter" id="charCounter">0 / 500</div>
+        <div class="message-buttons">
+            <button onclick="openGiphyModal('main')" class="btn btn-secondary">
+                🎬 GIF
+            </button>
+            <button onclick="postMessage()" id="postMessageBtn" class="btn">
+                📤 Post Message
+            </button>
+        </div>
+    </div>
+</div>
                 <!-- Team Chat Section -->
                 <div style="margin-top: 50px; padding-top: 30px; border-top: 3px solid #9BFB02;">
                     <h2 style="color: #9BFB02; margin-bottom: 20px;">🏆 Team Channels</h2>
@@ -340,13 +352,25 @@
                         <p style="text-align: center; padding: 30px; color: #999;">Select your team channel above to view messages</p>
                     </div>
 
-                    <div class="message-input-container" id="teamMessageInput" style="display: none;">
-                        <textarea id="teamMessageText" placeholder="Message your team... 💪" maxlength="500"></textarea>
-                        <div class="char-counter" id="teamCharCounter">0 / 500</div>
-                        <button class="btn" onclick="postTeamMessage()" id="postTeamMessageBtn" style="margin-top: 15px;">
-                            📤 Post to Team
-                        </button>
-                    </div>
+                <div id="teamMessageInput" class="message-input" style="display: none;">
+    <textarea 
+        id="teamMessageText" 
+        placeholder="Message your team... 💪" 
+        maxlength="500"
+        rows="3"
+    ></textarea>
+    <div class="message-input-footer">
+        <div class="char-counter" id="teamCharCounter">0 / 500</div>
+        <div class="message-buttons">
+            <button onclick="openGiphyModal('team')" class="btn btn-secondary">
+                🎬 GIF
+            </button>
+            <button onclick="postTeamMessage()" id="postTeamMessageBtn" class="btn">
+                📤 Post to Team
+            </button>
+        </div>
+    </div>
+</div>
                 </div>
             </div>
         </div>
@@ -621,5 +645,28 @@
 
     <!-- External JavaScript -->
     <script type="module" src="app.js"></script>
+    <!-- Giphy Search Modal -->
+<div id="giphyModal" class="modal">
+    <div class="modal-content giphy-modal-content">
+        <div class="modal-header">
+            <h2>Search GIFs</h2>
+            <button class="close-btn" onclick="closeGiphyModal()">×</button>
+        </div>
+        
+        <div class="giphy-search-bar">
+            <input 
+                type="text" 
+                id="giphySearchInput" 
+                placeholder="Search for GIFs..." 
+                class="giphy-search-input"
+            >
+            <button onclick="searchGiphy()" class="btn">🔍 Search</button>
+        </div>
+        
+        <div id="giphyResults" class="giphy-results-grid">
+            <!-- GIF results will be displayed here -->
+        </div>
+    </div>
+</div>
 </body>
 </html>
