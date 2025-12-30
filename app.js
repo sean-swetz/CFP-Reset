@@ -2194,10 +2194,12 @@ function initTeamChat() {
     }
     
     // If admin, show all team buttons
-    if (isAdmin) {
-        document.querySelectorAll('.team-channel-btn').forEach(btn => {
-            btn.style.display = 'block';
-        });
+   // If admin, show all team buttons
+if (isAdmin) {
+    console.log('Admin detected, showing all team buttons');
+    document.querySelectorAll('.team-channel-btn').forEach(btn => {
+        btn.style.display = 'block';
+    });
     }
 }
 
