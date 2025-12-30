@@ -1598,7 +1598,9 @@ input[type="number"]:focus {
 }
 
 .giphy-search-input {
-    flex: 1;
+    flex: 1; !important;
+    width: auto !important;
+    min-width: 200px !important;
     padding: 12px;
     background: #1a1a1a;
     border: 1px solid #333;
