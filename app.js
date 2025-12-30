@@ -2293,6 +2293,177 @@ Keep crushing it! Next week starts now! 💪`;
     }
 };
 
+// ===== GIPHY INTEGRATION =====
+// Add this to your app.js file
+
+const GIPHY_API_KEY = 'J0YCFCoA6FVyERMMdZsQ2tqak05QhycA';
+
+// Global state for GIF modal
+let currentGifContext = null; // 'main' or 'team'
+
+// Open Giphy modal
+window.openGiphyModal = function(context) {
+    currentGifContext = context; // 'main' or 'team'
+    document.getElementById('giphyModal').classList.add('active');
+    document.getElementById('giphySearchInput').value = '';
+    document.getElementById('giphyResults').innerHTML = '';
+    loadTrendingGifs();
+};
+
+// Close Giphy modal
+window.closeGiphyModal = function() {
+    document.getElementById('giphyModal').classList.remove('active');
+    currentGifContext = null;
+};
+
+// Load trending GIFs on modal open
+async function loadTrendingGifs() {
+    const resultsDiv = document.getElementById('giphyResults');
+    resultsDiv.innerHTML = '<p style="text-align: center; padding: 20px;">Loading trending GIFs...</p>';
+    
+    try {
+        const response = await fetch(
+            `https://api.giphy.com/v1/gifs/trending?api_key=${GIPHY_API_KEY}&limit=20&rating=pg-13`
+        );
+        const data = await response.json();
+        displayGiphyResults(data.data);
+    } catch (error) {
+        console.error('Load trending GIFs error:', error);
+        resultsDiv.innerHTML = '<p style="text-align: center; padding: 20px; color: #ff6b6b;">Failed to load GIFs</p>';
+    }
+}
+
+// Search GIFs
+window.searchGiphy = async function() {
+    const searchTerm = document.getElementById('giphySearchInput').value.trim();
+    
+    if (!searchTerm) {
+        loadTrendingGifs();
+        return;
+    }
+    
+    const resultsDiv = document.getElementById('giphyResults');
+    resultsDiv.innerHTML = '<p style="text-align: center; padding: 20px;">Searching...</p>';
+    
+    try {
+        const response = await fetch(
+            `https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_API_KEY}&q=${encodeURIComponent(searchTerm)}&limit=20&rating=pg-13`
+        );
+        const data = await response.json();
+        
+        if (data.data.length === 0) {
+            resultsDiv.innerHTML = '<p style="text-align: center; padding: 20px; color: #999;">No GIFs found. Try another search!</p>';
+            return;
+        }
+        
+        displayGiphyResults(data.data);
+    } catch (error) {
+        console.error('Search Giphy error:', error);
+        resultsDiv.innerHTML = '<p style="text-align: center; padding: 20px; color: #ff6b6b;">Search failed. Please try again.</p>';
+    }
+};
+
+// Display GIF results in grid
+function displayGiphyResults(gifs) {
+    const resultsDiv = document.getElementById('giphyResults');
+    
+    resultsDiv.innerHTML = gifs.map(gif => `
+        <div class="gif-item" onclick="selectGif('${gif.images.fixed_height.url}', '${gif.title.replace(/'/g, "\\'")}')">
+            <img src="${gif.images.fixed_height.url}" alt="${gif.title}" loading="lazy">
+        </div>
+    `).join('');
+}
+
+// Select a GIF and post it
+window.selectGif = async function(gifUrl, gifTitle) {
+    closeGiphyModal();
+    
+    if (currentGifContext === 'main') {
+        await postGifToMainChat(gifUrl, gifTitle);
+    } else if (currentGifContext === 'team') {
+        await postGifToTeamChat(gifUrl, gifTitle);
+    }
+};
+
+// Post GIF to main Locker Room
+async function postGifToMainChat(gifUrl, gifTitle) {
+    const btn = document.getElementById('postMessageBtn');
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Posting GIF...';
+    
+    try {
+        await addDoc(collection(db, 'messages'), {
+            text: '', // No text, just GIF
+            gifUrl: gifUrl,
+            gifTitle: gifTitle,
+            userName: currentUser.name,
+            userId: currentUser.uid,
+            team: currentUser.team || 'none',
+            photoURL: currentUser.photoURL || null,
+            timestamp: new Date().toISOString()
+        });
+        
+        loadMessages();
+    } catch (error) {
+        console.error('Post GIF error:', error);
+        alert('Failed to post GIF: ' + error.message);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+    }
+}
+
+// Post GIF to team chat
+async function postGifToTeamChat(gifUrl, gifTitle) {
+    if (!currentTeamChannel) {
+        alert('Please select a team channel first!');
+        return;
+    }
+    
+    if (currentUser.team !== currentTeamChannel && !isAdmin) {
+        alert('You can only post to your own team channel!');
+        return;
+    }
+    
+    const btn = document.getElementById('postTeamMessageBtn');
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Posting GIF...';
+    
+    try {
+        await addDoc(collection(db, 'teamMessages'), {
+            text: '', // No text, just GIF
+            gifUrl: gifUrl,
+            gifTitle: gifTitle,
+            userName: currentUser.name,
+            userId: currentUser.uid,
+            team: currentTeamChannel,
+            photoURL: currentUser.photoURL || null,
+            timestamp: new Date().toISOString()
+        });
+        
+        loadTeamMessages();
+    } catch (error) {
+        console.error('Post team GIF error:', error);
+        alert('Failed to post GIF: ' + error.message);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+    }
+}
+
+// Add Enter key support for Giphy search
+document.addEventListener('DOMContentLoaded', function() {
+    const giphyInput = document.getElementById('giphySearchInput');
+    if (giphyInput) {
+        giphyInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchGiphy();
+            }
+        });
+    }
+});
 // Call updateNotificationStatus when profile loads
 // Add this to your loadUserProfile() function at the end:
 // updateNotificationStatus();
