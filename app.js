@@ -973,12 +973,19 @@ async function loadTeamMessages() {
 }
 
 
-    window.postMessage = async function() {
+window.postMessage = async function() {
     const input = document.getElementById('messageInput');
     const text = input.value.trim();
     
-    if (!text) {
-        alert('Please enter a message!');
+    // Check for GIF preview
+    const container = document.getElementById('messageInput');
+    const gifPreview = container.querySelector('.gif-preview');
+    const gifUrl = gifPreview ? gifPreview.dataset.gifUrl : null;
+    const gifTitle = gifPreview ? gifPreview.dataset.gifTitle : null;
+    
+    // Must have either text or GIF
+    if (!text && !gifUrl) {
+        alert('Please enter a message or select a GIF!');
         return;
     }
     
@@ -992,17 +999,31 @@ async function loadTeamMessages() {
     btn.textContent = 'Posting...';
     
     try {
-        await addDoc(collection(db, 'messages'), {
+        const messageData = {
             text: text,
             userName: currentUser.name,
             userId: currentUser.uid,
             team: currentUser.team || 'none',
             photoURL: currentUser.photoURL || null,
             timestamp: new Date().toISOString()
-        });
+        };
+        
+        // Add GIF data if present
+        if (gifUrl) {
+            messageData.gifUrl = gifUrl;
+            messageData.gifTitle = gifTitle;
+        }
+        
+        await addDoc(collection(db, 'messages'), messageData);
         
         input.value = '';
         document.getElementById('charCounter').textContent = '0 / 500';
+        
+        // Remove GIF preview
+        if (gifPreview) {
+            gifPreview.remove();
+        }
+        
         loadMessages();
     } catch (error) {
         console.error('Post message error:', error);
@@ -2120,8 +2141,15 @@ window.postTeamMessage = async function() {
     const input = document.getElementById('teamMessageText');
     const text = input.value.trim();
     
-    if (!text) {
-        alert('Please enter a message!');
+    // Check for GIF preview
+    const container = document.getElementById('teamMessageInput');
+    const gifPreview = container.querySelector('.gif-preview');
+    const gifUrl = gifPreview ? gifPreview.dataset.gifUrl : null;
+    const gifTitle = gifPreview ? gifPreview.dataset.gifTitle : null;
+    
+    // Must have either text or GIF
+    if (!text && !gifUrl) {
+        alert('Please enter a message or select a GIF!');
         return;
     }
     
@@ -2135,7 +2163,6 @@ window.postTeamMessage = async function() {
         return;
     }
     
-    // Verify user is on this team (or admin)
     if (currentUser.team !== currentTeamChannel && !isAdmin) {
         alert('You can only post to your own team channel!');
         return;
@@ -2146,17 +2173,31 @@ window.postTeamMessage = async function() {
     btn.textContent = 'Posting...';
     
     try {
-        await addDoc(collection(db, 'teamMessages'), {
+        const messageData = {
             text: text,
             userName: currentUser.name,
             userId: currentUser.uid,
             team: currentTeamChannel,
             photoURL: currentUser.photoURL || null,
             timestamp: new Date().toISOString()
-        });
+        };
+        
+        // Add GIF data if present
+        if (gifUrl) {
+            messageData.gifUrl = gifUrl;
+            messageData.gifTitle = gifTitle;
+        }
+        
+        await addDoc(collection(db, 'teamMessages'), messageData);
         
         input.value = '';
         document.getElementById('teamCharCounter').textContent = '0 / 500';
+        
+        // Remove GIF preview
+        if (gifPreview) {
+            gifPreview.remove();
+        }
+        
         loadTeamMessages();
     } catch (error) {
         console.error('Post team message error:', error);
@@ -2387,90 +2428,61 @@ function displayGiphyResults(gifs) {
     const resultsDiv = document.getElementById('giphyResults');
     
     resultsDiv.innerHTML = gifs.map(gif => `
-        <div class="gif-item" onclick="selectGif('${gif.images.fixed_height.url}', '${gif.title.replace(/'/g, "\\'")}')">
+        <div class="gif-item" onclick="selectGif('${gif.images.fixed_height.url}', '${gif.title.replace(/'/g, "\\'")}', '${currentGifContext}')">
             <img src="${gif.images.fixed_height.url}" alt="${gif.title}" loading="lazy">
         </div>
     `).join('');
 }
 
-// Select a GIF and post it
-window.selectGif = async function(gifUrl, gifTitle) {
+// Select a GIF and show preview
+window.selectGif = function(gifUrl, gifTitle, context) {
     closeGiphyModal();
     
-    if (currentGifContext === 'main') {
-        await postGifToMainChat(gifUrl, gifTitle);
-    } else if (currentGifContext === 'team') {
-        await postGifToTeamChat(gifUrl, gifTitle);
+    if (context === 'main') {
+        showGifPreview('messageInput', gifUrl, gifTitle);
+    } else if (context === 'team') {
+        showGifPreview('teamMessageInput', gifUrl, gifTitle);
     }
 };
 
-// Post GIF to main Locker Room
-async function postGifToMainChat(gifUrl, gifTitle) {
-    const btn = document.getElementById('postMessageBtn');
-    const originalText = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = 'Posting GIF...';
+// Show GIF preview in message area
+function showGifPreview(containerId, gifUrl, gifTitle) {
+    const container = document.getElementById(containerId);
     
-    try {
-        await addDoc(collection(db, 'messages'), {
-            text: '', // No text, just GIF
-            gifUrl: gifUrl,
-            gifTitle: gifTitle,
-            userName: currentUser.name,
-            userId: currentUser.uid,
-            team: currentUser.team || 'none',
-            photoURL: currentUser.photoURL || null,
-            timestamp: new Date().toISOString()
-        });
-        
-        loadMessages();
-    } catch (error) {
-        console.error('Post GIF error:', error);
-        alert('Failed to post GIF: ' + error.message);
-    } finally {
-        btn.disabled = false;
-        btn.textContent = originalText;
+    // Remove any existing preview
+    const existingPreview = container.querySelector('.gif-preview');
+    if (existingPreview) {
+        existingPreview.remove();
     }
+    
+    // Create preview element
+    const preview = document.createElement('div');
+    preview.className = 'gif-preview';
+    preview.innerHTML = `
+        <div style="position: relative; display: inline-block; margin-top: 10px;">
+            <img src="${gifUrl}" alt="${gifTitle}" style="max-width: 300px; border-radius: 8px;">
+            <button onclick="removeGifPreview('${containerId}')" style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 16px;">×</button>
+            <div style="font-size: 0.85em; color: #666; margin-top: 5px;">${gifTitle}</div>
+        </div>
+    `;
+    
+    // Store GIF data as attributes
+    preview.dataset.gifUrl = gifUrl;
+    preview.dataset.gifTitle = gifTitle;
+    
+    // Add preview to container
+    container.appendChild(preview);
 }
 
-// Post GIF to team chat
-async function postGifToTeamChat(gifUrl, gifTitle) {
-    if (!currentTeamChannel) {
-        alert('Please select a team channel first!');
-        return;
+// Remove GIF preview
+window.removeGifPreview = function(containerId) {
+    const container = document.getElementById(containerId);
+    const preview = container.querySelector('.gif-preview');
+    if (preview) {
+        preview.remove();
     }
-    
-    if (currentUser.team !== currentTeamChannel && !isAdmin) {
-        alert('You can only post to your own team channel!');
-        return;
-    }
-    
-    const btn = document.getElementById('postTeamMessageBtn');
-    const originalText = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = 'Posting GIF...';
-    
-    try {
-        await addDoc(collection(db, 'teamMessages'), {
-            text: '', // No text, just GIF
-            gifUrl: gifUrl,
-            gifTitle: gifTitle,
-            userName: currentUser.name,
-            userId: currentUser.uid,
-            team: currentTeamChannel,
-            photoURL: currentUser.photoURL || null,
-            timestamp: new Date().toISOString()
-        });
-        
-        loadTeamMessages();
-    } catch (error) {
-        console.error('Post team GIF error:', error);
-        alert('Failed to post GIF: ' + error.message);
-    } finally {
-        btn.disabled = false;
-        btn.textContent = originalText;
-    }
-}
+};
+
 
 // Add Enter key support for Giphy search
 document.addEventListener('DOMContentLoaded', function() {
