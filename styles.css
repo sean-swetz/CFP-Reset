@@ -1718,7 +1718,7 @@ input[type="number"]:focus {
     margin-top: 10px;
     border-radius: 8px;
     overflow: hidden;
-    max-width: 200px;
+    max-width: 150;
 }
 
 .message-gif img {
