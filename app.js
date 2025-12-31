@@ -974,13 +974,12 @@ async function loadTeamMessages() {
 
 
 window.postMessage = async function() {
-    const textarea = document.getElementById('messageInput'); // or 'teamMessageText' for team
-    const container = textarea.closest('.message-input');
+    const input = document.getElementById('messageInput');
     const text = input.value.trim();
     
     // Check for GIF preview
-    const container = document.getElementById('messageInput');
-    const gifPreview = container.querySelector('.gif-preview');
+    const container = input.closest('.message-input');
+    const gifPreview = container ? container.querySelector('.gif-preview') : null;
     const gifUrl = gifPreview ? gifPreview.dataset.gifUrl : null;
     const gifTitle = gifPreview ? gifPreview.dataset.gifTitle : null;
     
