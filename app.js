@@ -2483,7 +2483,7 @@ function showGifPreview(inputId, gifUrl, gifTitle) {
     preview.className = 'gif-preview';
     preview.innerHTML = `
         <div style="position: relative; display: inline-block; margin: 10px 0;">
-            <img src="${gifUrl}" alt="${gifTitle}" style="max-width: 300px; border-radius: 8px; display: block;">
+            <img src="${gifUrl}" alt="${gifTitle}" style="max-width: 200px; border-radius: 8px; display: block;">
             <button onclick="removeGifPreview('${inputId}')" type="button" style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 16px; line-height: 1;">×</button>
             <div style="font-size: 0.85em; color: #666; margin-top: 5px;">${gifTitle}</div>
         </div>
