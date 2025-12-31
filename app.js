@@ -974,7 +974,8 @@ async function loadTeamMessages() {
 
 
 window.postMessage = async function() {
-    const input = document.getElementById('messageInput');
+    const textarea = document.getElementById('messageInput'); // or 'teamMessageText' for team
+    const container = textarea.closest('.message-input');
     const text = input.value.trim();
     
     // Check for GIF preview
@@ -2141,9 +2142,9 @@ window.postTeamMessage = async function() {
     const input = document.getElementById('teamMessageText');
     const text = input.value.trim();
     
-    // Check for GIF preview
-    const container = document.getElementById('teamMessageInput');
-    const gifPreview = container.querySelector('.gif-preview');
+    // Check for GIF preview - UPDATED LINE
+    const container = input.closest('.message-input');
+    const gifPreview = container ? container.querySelector('.gif-preview') : null;
     const gifUrl = gifPreview ? gifPreview.dataset.gifUrl : null;
     const gifTitle = gifPreview ? gifPreview.dataset.gifTitle : null;
     
@@ -2451,8 +2452,26 @@ window.selectGif = function(gifUrl, gifTitle, context) {
 };
 
 // Show GIF preview in message area
-function showGifPreview(containerId, gifUrl, gifTitle) {
-    const container = document.getElementById(containerId);
+function showGifPreview(inputId, gifUrl, gifTitle) {
+    console.log('showGifPreview called with:', inputId);
+    
+    // Get the textarea
+    const textarea = document.getElementById(inputId === 'messageInput' ? 'messageInput' : 'teamMessageText');
+    
+    if (!textarea) {
+        console.error('Textarea not found!', inputId);
+        return;
+    }
+    
+    // Get the parent container (the .message-input div)
+    const container = textarea.closest('.message-input');
+    
+    if (!container) {
+        console.error('Container not found!');
+        return;
+    }
+    
+    console.log('Container found:', container);
     
     // Remove any existing preview
     const existingPreview = container.querySelector('.gif-preview');
@@ -2464,9 +2483,9 @@ function showGifPreview(containerId, gifUrl, gifTitle) {
     const preview = document.createElement('div');
     preview.className = 'gif-preview';
     preview.innerHTML = `
-        <div style="position: relative; display: inline-block; margin-top: 10px;">
-            <img src="${gifUrl}" alt="${gifTitle}" style="max-width: 300px; border-radius: 8px;">
-            <button onclick="removeGifPreview('${containerId}')" style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 16px;">×</button>
+        <div style="position: relative; display: inline-block; margin: 10px 0;">
+            <img src="${gifUrl}" alt="${gifTitle}" style="max-width: 300px; border-radius: 8px; display: block;">
+            <button onclick="removeGifPreview('${inputId}')" type="button" style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 16px; line-height: 1;">×</button>
             <div style="font-size: 0.85em; color: #666; margin-top: 5px;">${gifTitle}</div>
         </div>
     `;
@@ -2475,13 +2494,21 @@ function showGifPreview(containerId, gifUrl, gifTitle) {
     preview.dataset.gifUrl = gifUrl;
     preview.dataset.gifTitle = gifTitle;
     
-    // Add preview to container
-    container.appendChild(preview);
+    // Insert preview between textarea and footer
+    const footer = container.querySelector('.message-input-footer');
+    container.insertBefore(preview, footer);
+    
+    console.log('Preview added!');
 }
 
 // Remove GIF preview
-window.removeGifPreview = function(containerId) {
-    const container = document.getElementById(containerId);
+window.removeGifPreview = function(inputId) {
+    const textarea = document.getElementById(inputId === 'messageInput' ? 'messageInput' : 'teamMessageText');
+    if (!textarea) return;
+    
+    const container = textarea.closest('.message-input');
+    if (!container) return;
+    
     const preview = container.querySelector('.gif-preview');
     if (preview) {
         preview.remove();
