@@ -2436,6 +2436,11 @@ function displayGiphyResults(gifs) {
 
 // Select a GIF and show preview
 window.selectGif = function(gifUrl, gifTitle, context) {
+    console.log('selectGif called!');
+    console.log('gifUrl:', gifUrl);
+    console.log('gifTitle:', gifTitle);
+    console.log('context:', context);
+    
     closeGiphyModal();
     
     if (context === 'main') {
