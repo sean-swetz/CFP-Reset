@@ -68,21 +68,16 @@ function showApp() {
     document.getElementById('app').style.display = 'block';
     document.getElementById('userGreeting').textContent = `Welcome, ${currentUser.name}!${isAdmin ? ' (Admin)' : ''}`;
     
-    
     if (isAdmin) {
         document.getElementById('adminNavBtn').style.display = 'block';
-        document.getElementById('editChallengeInfoBtn').style.display = 'block'; 
-}
-
-    // Show admin link in mobile menu
-if (isAdmin) {
-    document.getElementById('mobileAdminLink').style.display = 'block';
-}
+        document.getElementById('editChallengeInfoBtn').style.display = 'block';
+        document.getElementById('mobileAdminLink').style.display = 'block';
+    }
     
     checkCheckinWindow();
     loadLeaderboard();
     loadCheckInCriteria();
-    //showNotificationBanner();
+    // showNotificationBanner();
 }
 
 function showAuthPage() {
