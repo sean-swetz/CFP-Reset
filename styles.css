@@ -1816,3 +1816,162 @@ input[type="number"]:focus {
         width: 100%;
     }
 }
+/* ===== CHALLENGE INFO PAGE ===== */
+.info-section {
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 25px;
+    border-left: 5px solid #9BFB02;
+}
+
+.info-section.restricted {
+    border-left-color: #ff6b6b;
+    background: #fff5f5;
+}
+
+.info-heading {
+    color: #3146E7;
+    font-size: 1.5em;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.info-content {
+    color: #333;
+    line-height: 1.8;
+}
+
+.info-content p {
+    margin-bottom: 12px;
+}
+
+.info-content strong {
+    color: #000;
+}
+
+.info-content ul {
+    margin: 10px 0;
+    line-height: 1.8;
+}
+
+.info-content ul li {
+    margin-bottom: 8px;
+}
+
+.food-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.food-item {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    border: 2px solid #e0e0e0;
+    transition: all 0.3s;
+}
+
+.food-item:hover {
+    border-color: #9BFB02;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(155, 251, 2, 0.2);
+}
+
+.food-item strong {
+    display: block;
+    color: #3146E7;
+    margin-bottom: 5px;
+    font-size: 1.05em;
+}
+
+.food-item span {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.faq-item {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    border-left: 3px solid #9BFB02;
+}
+
+.faq-item strong {
+    display: block;
+    color: #3146E7;
+    margin-bottom: 8px;
+    font-size: 1.05em;
+}
+
+.faq-item p {
+    margin: 0;
+    color: #666;
+}
+
+/* Info callout box for check-in page */
+.challenge-info-callout {
+    background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+    border: 2px solid #3146E7;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.challenge-info-callout .icon {
+    font-size: 2.5em;
+    flex-shrink: 0;
+}
+
+.challenge-info-callout .content {
+    flex: 1;
+}
+
+.challenge-info-callout h4 {
+    margin: 0 0 8px 0;
+    color: #3146E7;
+    font-size: 1.2em;
+}
+
+.challenge-info-callout p {
+    margin: 0;
+    color: #555;
+}
+
+.challenge-info-callout .btn-link {
+    background: #3146E7;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-block;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s;
+}
+
+.challenge-info-callout .btn-link:hover {
+    background: #2236c7;
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .challenge-info-callout {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .food-grid {
+        grid-template-columns: 1fr;
+    }
+}
