@@ -73,7 +73,7 @@ function showApp() {
         document.getElementById('adminNavBtn').style.display = 'block';
         document.getElementById('editChallengeInfoBtn').style.display = 'block'; 
 }
-    }
+
     // Show admin link in mobile menu
 if (isAdmin) {
     document.getElementById('mobileAdminLink').style.display = 'block';
