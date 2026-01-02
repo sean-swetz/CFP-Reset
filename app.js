@@ -321,8 +321,7 @@ window.showSection = function(sectionName) {
         loadAdminData();
     }
 };
-
-// ===== CHECK-IN FUNCTIONALITY =====
+// Check-in Functionality
 document.getElementById('checkinForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -344,11 +343,30 @@ document.getElementById('checkinForm').addEventListener('submit', async (e) => {
             }
             checkedCriteria[criteriaId].push(id);
         });
+        
+        // Collect all counter values
+        document.querySelectorAll('.criteria-counter').forEach(counter => {
+            const criteriaId = counter.id.replace('_counter', '');
+            const count = parseInt(counter.value) || 0;
+            
+            if (count > 0) {
+                checkedCriteria[criteriaId] = count;
+            }
+        });
 
         // Calculate total score
         let weeklyScore = 0;
+        
+        // Add checkbox points
         document.querySelectorAll('.criteria-check:checked').forEach(checkbox => {
             weeklyScore += parseInt(checkbox.dataset.points);
+        });
+        
+        // Add counter points
+        document.querySelectorAll('.criteria-counter').forEach(counter => {
+            const count = parseInt(counter.value) || 0;
+            const pointsPerUnit = parseInt(counter.dataset.points);
+            weeklyScore += (count * pointsPerUnit);
         });
 
         // Update user points
@@ -1812,6 +1830,11 @@ async function loadCheckInCriteria() {
             checkbox.addEventListener('change', calculateDynamicScore);
         });
         
+        // Add event listeners to all counter inputs
+        document.querySelectorAll('#dynamicCriteria input[type="number"]').forEach(counter => {
+            counter.addEventListener('input', calculateDynamicScore);
+        });
+        
         calculateDynamicScore();
         
     } catch (error) {
@@ -1825,7 +1848,7 @@ function renderCheckInCriteria(criteria) {
     const isDeduction = criteria.points < 0;
     const itemClass = isDeduction ? 'challenge-item deduction-item' : 'challenge-item';
     const pointsClass = isDeduction ? 'challenge-points deduction-points' : 'challenge-points';
-    const pointsLabel = `${criteria.points > 0 ? '+' : ''}${criteria.points} pts${criteria.type === 'daily' ? '/day' : ''}`;
+    const pointsLabel = `${criteria.points > 0 ? '+' : ''}${criteria.points} pts${criteria.type === 'daily' ? '/day' : criteria.type === 'counter' ? '/unit' : ''}`;
     
     if (criteria.type === 'daily') {
         return `
@@ -1866,6 +1889,31 @@ function renderCheckInCriteria(criteria) {
                 </div>
             </div>
         `;
+    } else if (criteria.type === 'counter') {
+        // Counter type - number input
+        const maxCount = criteria.maxCount || 10;
+        return `
+            <div class="${itemClass}" data-criteria-id="${criteria.id}">
+                <div class="challenge-header">
+                    <span class="challenge-name">${criteria.name}</span>
+                    <span class="${pointsClass}">${pointsLabel}</span>
+                </div>
+                <div class="counter-input" style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
+                    <label for="${criteria.id}_counter" style="font-weight: 600;">Count:</label>
+                    <input 
+                        type="number" 
+                        id="${criteria.id}_counter" 
+                        class="criteria-counter" 
+                        data-points="${criteria.points}"
+                        min="0" 
+                        max="${maxCount}" 
+                        value="0"
+                        style="width: 80px; padding: 8px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em; text-align: center;"
+                    >
+                    <span style="color: #666; font-size: 0.9em;">(0-${maxCount})</span>
+                </div>
+            </div>
+        `;
     } else {
         // Weekly single checkbox
         const checkboxClass = isDeduction ? 'single-checkbox deduction' : 'single-checkbox';
@@ -1883,13 +1931,20 @@ function renderCheckInCriteria(criteria) {
         `;
     }
 }
-
 function calculateDynamicScore() {
     let total = 0;
     
+    // Calculate checkbox points
     document.querySelectorAll('.criteria-check:checked').forEach(checkbox => {
         const points = parseInt(checkbox.dataset.points);
         total += points;
+    });
+    
+    // Calculate counter points
+    document.querySelectorAll('.criteria-counter').forEach(counter => {
+        const count = parseInt(counter.value) || 0;
+        const pointsPerUnit = parseInt(counter.dataset.points);
+        total += (count * pointsPerUnit);
     });
     
     document.getElementById('totalScore').textContent = `Total Weekly Score: ${total} points`;
@@ -1924,15 +1979,16 @@ async function loadCriteriaList() {
 
 function renderCriteriaItem(criteria) {
     const isDeduction = criteria.points < 0;
-    const typeLabel = criteria.type === 'daily' ? '📅 Daily' : '📋 Weekly';
-    const pointsLabel = `${criteria.points > 0 ? '+' : ''}${criteria.points} pts${criteria.type === 'daily' ? '/day' : ''}`;
+    const typeLabel = criteria.type === 'daily' ? '📅 Daily' : criteria.type === 'counter' ? '🔢 Counter' : '📋 Weekly';
+    const pointsLabel = `${criteria.points > 0 ? '+' : ''}${criteria.points} pts${criteria.type === 'daily' ? '/day' : criteria.type === 'counter' ? '/unit' : ''}`;
+    const maxCountInfo = criteria.type === 'counter' ? ` (max: ${criteria.maxCount || 10})` : '';
     
     return `
         <div class="criteria-item ${isDeduction ? 'deduction' : ''}">
             <div class="criteria-header">
                 <div class="criteria-info">
                     <div class="criteria-name-display">${criteria.name}</div>
-                    <div class="criteria-details">${typeLabel} • ${pointsLabel}</div>
+                    <div class="criteria-details">${typeLabel} • ${pointsLabel}${maxCountInfo}</div>
                 </div>
                 <div class="criteria-actions">
                     <button class="icon-btn" onclick="editCriteria('${criteria.id}')" title="Edit">
@@ -1950,10 +2006,14 @@ function renderCriteriaItem(criteria) {
                     <input type="number" class="criteria-input" id="points-${criteria.id}" value="${criteria.points}" placeholder="Points">
                 </div>
                 <div class="criteria-form-row">
-                    <select class="criteria-input" id="type-${criteria.id}">
+                    <select class="criteria-input" id="type-${criteria.id}" onchange="toggleMaxCountField('${criteria.id}')">
                         <option value="daily" ${criteria.type === 'daily' ? 'selected' : ''}>Daily (7 checkboxes)</option>
                         <option value="weekly" ${criteria.type === 'weekly' ? 'selected' : ''}>Weekly (single checkbox)</option>
+                        <option value="counter" ${criteria.type === 'counter' ? 'selected' : ''}>Counter (number input)</option>
                     </select>
+                </div>
+                <div class="criteria-form-row" id="maxcount-row-${criteria.id}" style="display: ${criteria.type === 'counter' ? 'block' : 'none'};">
+                    <input type="number" class="criteria-input" id="maxcount-${criteria.id}" value="${criteria.maxCount || 10}" placeholder="Max count (e.g., 10)" min="1">
                 </div>
                 <div style="display: flex; gap: 10px; margin-top: 10px;">
                     <button class="btn btn-secondary" onclick="saveCriteria('${criteria.id}')" style="flex: 1;">
@@ -1968,17 +2028,47 @@ function renderCriteriaItem(criteria) {
     `;
 }
 
-// Add new criteria
+// Toggle max count field visibility
+window.toggleMaxCountField = function(id) {
+    const typeSelect = document.getElementById(`type-${id}`);
+    const maxCountRow = document.getElementById(`maxcount-row-${id}`);
+    
+    if (typeSelect.value === 'counter') {
+        maxCountRow.style.display = 'block';
+    } else {
+        maxCountRow.style.display = 'none';
+    }
+};
 window.addNewCriteria = async function() {
     if (!isAdmin) return;
     
-    const name = prompt('Criteria name (e.g., "Hit Protein Goal"):');
+    const name = prompt('Criteria name (e.g., "Alcoholic Drinks"):');
     if (!name) return;
     
-    const points = prompt('Points value (use negative for deductions):');
+    const points = prompt('Points value per unit (use negative for deductions):');
     if (!points) return;
     
-    const type = confirm('Is this a DAILY criteria?\n\nClick OK for Daily (7 checkboxes)\nClick Cancel for Weekly (single checkbox)') ? 'daily' : 'weekly';
+    // Ask for type
+    const typeChoice = prompt('Choose type:\n1 = Daily (7 checkboxes)\n2 = Weekly (single checkbox)\n3 = Counter (number input)\n\nEnter 1, 2, or 3:');
+    
+    let type, maxCount = null;
+    
+    if (typeChoice === '1') {
+        type = 'daily';
+    } else if (typeChoice === '2') {
+        type = 'weekly';
+    } else if (typeChoice === '3') {
+        type = 'counter';
+        maxCount = prompt('Maximum count (e.g., 10 for "0-10 drinks"):');
+        if (!maxCount || isNaN(maxCount)) {
+            alert('Invalid max count. Criteria not created.');
+            return;
+        }
+        maxCount = parseInt(maxCount);
+    } else {
+        alert('Invalid choice. Criteria not created.');
+        return;
+    }
     
     try {
         // Get current max order
@@ -1986,13 +2076,20 @@ window.addNewCriteria = async function() {
         const snapshot = await getDocs(q);
         const maxOrder = snapshot.empty ? 0 : snapshot.docs[0].data().order;
         
-        await addDoc(collection(db, 'criteria'), {
+        const criteriaData = {
             name: name,
             points: parseInt(points),
             type: type,
             order: maxOrder + 1,
             createdAt: new Date().toISOString()
-        });
+        };
+        
+        // Add maxCount for counter type
+        if (type === 'counter') {
+            criteriaData.maxCount = maxCount;
+        }
+        
+        await addDoc(collection(db, 'criteria'), criteriaData);
         
         alert('Criteria added! ✅');
         loadCriteriaList();
@@ -2002,7 +2099,6 @@ window.addNewCriteria = async function() {
         alert('Failed to add criteria: ' + error.message);
     }
 };
-
 // Edit criteria
 window.editCriteria = function(id) {
     const form = document.getElementById(`edit-${id}`);
@@ -2026,13 +2122,28 @@ window.saveCriteria = async function(id) {
         return;
     }
     
+    const updateData = {
+        name: name,
+        points: points,
+        type: type,
+        updatedAt: new Date().toISOString()
+    };
+    
+    // Add maxCount if counter type
+    if (type === 'counter') {
+        const maxCount = parseInt(document.getElementById(`maxcount-${id}`).value);
+        if (isNaN(maxCount) || maxCount < 1) {
+            alert('Please enter a valid max count!');
+            return;
+        }
+        updateData.maxCount = maxCount;
+    } else {
+        // Remove maxCount if type changed from counter
+        updateData.maxCount = null;
+    }
+    
     try {
-        await updateDoc(doc(db, 'criteria', id), {
-            name: name,
-            points: points,
-            type: type,
-            updatedAt: new Date().toISOString()
-        });
+        await updateDoc(doc(db, 'criteria', id), updateData);
         
         alert('Criteria updated! ✅');
         loadCriteriaList();
@@ -2042,7 +2153,6 @@ window.saveCriteria = async function(id) {
         alert('Failed to save: ' + error.message);
     }
 };
-
 // Delete criteria
 window.deleteCriteria = async function(id, name) {
     if (!isAdmin) return;
