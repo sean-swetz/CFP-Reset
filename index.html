@@ -559,6 +559,12 @@
                             <button class="team-channel-btn team-teal" onclick="switchTeamChannel('teal')" style="display: none;">
                                 🩵 Teal
                             </button>
+                            <button class="team-channel-btn team-black" onclick="switchTeamChannel('black')" style="display: none;">
+                                ⚫ Black
+                            </button>
+                            <button class="team-channel-btn team-brown" onclick="switchTeamChannel('brown')" style="display: none;">
+                                🟤 Brown
+                            </button>
                         </div>
                         <p id="currentChannelName" style="margin-top: 10px; color: #666; font-weight: 600;"></p>
                     </div>
@@ -758,6 +764,18 @@
                             <strong>🩵 Teal Team</strong>
                             <input type="text" class="team-name-input" id="teamName_teal" placeholder="e.g., Teal Titans" 
                                    onblur="window.updateTeamName('teal', this.value)"
+                                   onkeypress="if(event.key==='Enter'){event.preventDefault();this.blur();}">
+                        </div>
+                        <div style="background: #1a1a1a; padding: 15px; border-radius: 10px; color: white;">
+                            <strong>⚫ Black Team</strong>
+                            <input type="text" class="team-name-input" id="teamName_black" placeholder="e.g., Black Panthers" 
+                                   onblur="window.updateTeamName('black', this.value)"
+                                   onkeypress="if(event.key==='Enter'){event.preventDefault();this.blur();}">
+                        </div>
+                        <div style="background: #6F4E37; padding: 15px; border-radius: 10px; color: white;">
+                            <strong>🟤 Brown Team</strong>
+                            <input type="text" class="team-name-input" id="teamName_brown" placeholder="e.g., Brown Bears" 
+                                   onblur="window.updateTeamName('brown', this.value)"
                                    onkeypress="if(event.key==='Enter'){event.preventDefault();this.blur();}">
                         </div>
                     </div>
