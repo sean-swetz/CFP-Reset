@@ -1975,3 +1975,20 @@ input[type="number"]:focus {
         grid-template-columns: 1fr;
     }
 }
+/* Drag and drop styling for criteria */
+.criteria-item {
+    cursor: move;
+    transition: all 0.2s ease;
+}
+
+.criteria-item:hover {
+    background: #f8f9fa;
+}
+
+.criteria-item.dragging {
+    opacity: 0.4;
+}
+
+.criteria-item:active {
+    cursor: grabbing;
+}
