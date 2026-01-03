@@ -1984,11 +1984,23 @@ function renderCriteriaItem(criteria) {
     const maxCountInfo = criteria.type === 'counter' ? ` (max: ${criteria.maxCount || 10})` : '';
     
     return `
-        <div class="criteria-item ${isDeduction ? 'deduction' : ''}">
+        <div class="criteria-item ${isDeduction ? 'deduction' : ''}" 
+             draggable="true" 
+             data-criteria-id="${criteria.id}"
+             data-order="${criteria.order}"
+             ondragstart="handleDragStart(event)"
+             ondragover="handleDragOver(event)"
+             ondrop="handleDrop(event)"
+             ondragend="handleDragEnd(event)">
             <div class="criteria-header">
                 <div class="criteria-info">
-                    <div class="criteria-name-display">${criteria.name}</div>
-                    <div class="criteria-details">${typeLabel} • ${pointsLabel}${maxCountInfo}</div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="cursor: grab; font-size: 1.2em; color: #999;">⋮⋮</span>
+                        <div>
+                            <div class="criteria-name-display">${criteria.name}</div>
+                            <div class="criteria-details">${typeLabel} • ${pointsLabel}${maxCountInfo}</div>
+                        </div>
+                    </div>
                 </div>
                 <div class="criteria-actions">
                     <button class="icon-btn" onclick="editCriteria('${criteria.id}')" title="Edit">
@@ -2026,6 +2038,83 @@ function renderCriteriaItem(criteria) {
             </div>
         </div>
     `;
+}
+
+// Drag and drop state
+let draggedElement = null;
+
+window.handleDragStart = function(e) {
+    draggedElement = e.target.closest('.criteria-item');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', draggedElement.innerHTML);
+    draggedElement.style.opacity = '0.4';
+};
+
+window.handleDragOver = function(e) {
+    if (e.preventDefault) {
+        e.preventDefault();
+    }
+    e.dataTransfer.dropEffect = 'move';
+    return false;
+};
+
+window.handleDrop = async function(e) {
+    if (e.stopPropagation) {
+        e.stopPropagation();
+    }
+    
+    const dropTarget = e.target.closest('.criteria-item');
+    
+    if (draggedElement !== dropTarget && dropTarget) {
+        // Get all criteria items
+        const allItems = Array.from(document.querySelectorAll('.criteria-item'));
+        const draggedIndex = allItems.indexOf(draggedElement);
+        const targetIndex = allItems.indexOf(dropTarget);
+        
+        // Reorder in DOM
+        if (draggedIndex < targetIndex) {
+            dropTarget.parentNode.insertBefore(draggedElement, dropTarget.nextSibling);
+        } else {
+            dropTarget.parentNode.insertBefore(draggedElement, dropTarget);
+        }
+        
+        // Save new order to Firebase
+        await saveNewOrder();
+    }
+    
+    return false;
+};
+
+window.handleDragEnd = function(e) {
+    if (draggedElement) {
+        draggedElement.style.opacity = '1';
+    }
+    draggedElement = null;
+};
+
+async function saveNewOrder() {
+    if (!isAdmin) return;
+    
+    try {
+        const allItems = Array.from(document.querySelectorAll('.criteria-item'));
+        
+        // Update order for each item
+        const updates = allItems.map((item, index) => {
+            const criteriaId = item.dataset.criteriaId;
+            return updateDoc(doc(db, 'criteria', criteriaId), {
+                order: index + 1
+            });
+        });
+        
+        await Promise.all(updates);
+        
+        // Reload to show updated order
+        loadCriteriaList();
+        
+    } catch (error) {
+        console.error('Save order error:', error);
+        alert('Failed to save order: ' + error.message);
+    }
 }
 
 // Toggle max count field visibility
