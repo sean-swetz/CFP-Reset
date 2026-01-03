@@ -611,7 +611,7 @@ async function loadChallengeInfo() {
             const data = infoDoc.data();
             
             // Update each section if it exists in Firebase
-            const sections = ['overview', 'goodFoods', 'restrictedFoods', 'proteinSources', 'veggieGuide', 'carbSources', 'hydration', 'faqs'];
+            const sections = ['overview', 'goodFoods', 'restrictedFoods', 'veggieGuide', 'carbSources', 'hydration'];
             
             sections.forEach(section => {
                 if (data[section]) {
