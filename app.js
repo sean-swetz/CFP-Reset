@@ -875,7 +875,7 @@ async function loadTeamsPage() {
         
         const teamGroups = {
             red: [], blue: [], green: [], yellow: [],
-            purple: [], orange: [], pink: [], teal: [], none: []
+            purple: [], orange: [], pink: [], teal: [], black: [], brown:[], none: []
         };
 
         querySnapshot.forEach((doc) => {
