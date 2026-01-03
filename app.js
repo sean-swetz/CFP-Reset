@@ -262,14 +262,23 @@ async function loadMessages() {
                 ? `<button class="delete-message-btn" onclick="deleteMessage('${messageId}')">Delete</button>`
                 : '';
             
-            // Check if message has a GIF
-            const messageContent = msg.gifUrl 
-                ? `<div class="message-gif">
+           // Check if message has a GIF and/or text
+            let messageContent = '';
+            
+            if (msg.gifUrl) {
+                messageContent += `<div class="message-gif">
                      <img src="${msg.gifUrl}" alt="${msg.gifTitle || 'GIF'}" loading="lazy">
                      ${msg.gifTitle ? `<div class="gif-caption">${escapeHtml(msg.gifTitle)}</div>` : ''}
-                   </div>`
-                : `<div class="message-text">${escapeHtml(msg.text)}</div>`;
+                   </div>`;
+            }
             
+            if (msg.text) {
+                messageContent += `<div class="message-text">${escapeHtml(msg.text)}</div>`;
+            }
+            
+            if (!messageContent) {
+                messageContent = '<div class="message-text"><em>No content</em></div>';
+            }
             html += `
                 <div class="message-item">
                     <div class="message-header">
@@ -1140,13 +1149,23 @@ async function loadTeamMessages() {
                 : '';
             
             // Check if message has a GIF
-            const messageContent = msg.gifUrl 
-                ? `<div class="message-gif">
+           // Check if message has a GIF and/or text
+            let messageContent = '';
+            
+            if (msg.gifUrl) {
+                messageContent += `<div class="message-gif">
                      <img src="${msg.gifUrl}" alt="${msg.gifTitle || 'GIF'}" loading="lazy">
                      ${msg.gifTitle ? `<div class="gif-caption">${escapeHtml(msg.gifTitle)}</div>` : ''}
-                   </div>`
-                : `<div class="message-text">${escapeHtml(msg.text)}</div>`;
+                   </div>`;
+            }
             
+            if (msg.text) {
+                messageContent += `<div class="message-text">${escapeHtml(msg.text)}</div>`;
+            }
+            
+            if (!messageContent) {
+                messageContent = '<div class="message-text"><em>No content</em></div>';
+            }
             html += `
                 <div class="message-item">
                     <div class="message-header">
@@ -1200,7 +1219,7 @@ window.postMessage = async function() {
     
     try {
         const messageData = {
-            text: text,
+            text: text,  // This should include text even if there's a GIF
             userName: currentUser.name,
             userId: currentUser.uid,
             team: currentUser.team || 'none',
