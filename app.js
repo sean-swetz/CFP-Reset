@@ -467,6 +467,12 @@ let currentInfoSection = null;
 window.editInfoSection = function(sectionId) {
     if (!isAdmin) return;
     
+    // Skip protein sources - it has special grid layout
+    if (sectionId === 'proteinSources') {
+        alert('Protein Sources uses a special grid layout and cannot be edited with the text editor. Please edit the HTML directly if you need to update this section.');
+        return;
+    }
+    
     currentInfoSection = sectionId;
     
     // Set modal title
