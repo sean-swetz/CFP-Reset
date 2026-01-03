@@ -2906,23 +2906,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Temporary function to delete protein sources from Firebase
-window.fixProteinSources = async function() {
-    if (!isAdmin) return;
-    
-    try {
-        await updateDoc(doc(db, 'settings', 'challengeInfo'), {
-            proteinSources: null,
-            proteinSources_updatedBy: null,
-            proteinSources_updatedAt: null
-        });
-        
-        alert('Protein Sources data cleared from Firebase! Refresh the page to see the original grid.');
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Failed to clear data: ' + error.message);
-    }
-};
+
 // Call updateNotificationStatus when profile loads
 // Add this to your loadUserProfile() function at the end:
 // updateNotificationStatus();
