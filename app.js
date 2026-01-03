@@ -1195,6 +1195,9 @@ window.postMessage = async function() {
     const input = document.getElementById('messageInput');
     const text = input.value.trim();
     
+    console.log('DEBUG - Text value:', text);  // ADD THIS LINE
+    console.log('DEBUG - Text length:', text.length);  // ADD THIS LINE
+    
     // Check for GIF preview
     const container = input.closest('.message-input');
     const gifPreview = container ? container.querySelector('.gif-preview') : null;
