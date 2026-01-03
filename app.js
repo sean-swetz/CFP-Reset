@@ -70,7 +70,6 @@ function showApp() {
     
     if (isAdmin) {
         document.getElementById('adminNavBtn').style.display = 'block';
-        document.getElementById('editChallengeInfoBtn').style.display = 'block';
         document.getElementById('mobileAdminLink').style.display = 'block';
     }
     
@@ -315,6 +314,8 @@ window.showSection = function(sectionName) {
     loadWeeklyChallenge();
     loadMessages();
     initTeamChat();
+    } else if (sectionName === 'challengeInfo') {  
+        loadChallengeInfo();
     } else if (sectionName === 'profile') {
         loadUserProfile();
     } else if (sectionName === 'admin' && isAdmin) {
@@ -459,6 +460,182 @@ window.toggleCheckinWindow = async function(open) {
         alert('Failed to update check-in window');
     }
 };
+
+// ===== CHALLENGE INFO EDITOR =====
+let currentInfoSection = null;
+
+window.editInfoSection = function(sectionId) {
+    if (!isAdmin) return;
+    
+    currentInfoSection = sectionId;
+    
+    // Set modal title
+    const titles = {
+        overview: 'Challenge Overview',
+        goodFoods: 'Good Foods',
+        restrictedFoods: 'Restricted Foods',
+        proteinSources: 'Protein Sources',
+        veggieGuide: 'Veggie Guide',
+        carbSources: 'Healthy Carb Sources',
+        hydration: 'Hydration Tips',
+        faqs: 'Frequently Asked Questions'
+    };
+    
+    document.getElementById('infoEditorTitle').textContent = `Edit ${titles[sectionId]}`;
+    
+    // Load current content
+    const contentDiv = document.getElementById(`${sectionId}Content`);
+    const currentHTML = contentDiv.innerHTML;
+    
+    // Convert HTML back to markdown-like format
+    let text = currentHTML
+        .replace(/<strong>(.*?)<\/strong>/g, '**$1**')
+        .replace(/<em>(.*?)<\/em>/g, '*$1*')
+        .replace(/<br>/g, '\n')
+        .replace(/<\/p><p>/g, '\n\n')
+        .replace(/<p>/g, '')
+        .replace(/<\/p>/g, '')
+        .replace(/<li>/g, '• ')
+        .replace(/<\/li>/g, '\n')
+        .replace(/<ul.*?>/g, '')
+        .replace(/<\/ul>/g, '')
+        .replace(/<hr.*?>/g, '\n---\n')
+        .replace(/<div.*?>/g, '')
+        .replace(/<\/div>/g, '\n')
+        .replace(/&nbsp;/g, ' ')
+        .trim();
+    
+    document.getElementById('infoEditorText').value = text;
+    updateInfoPreview();
+    document.getElementById('challengeInfoEditorModal').classList.add('active');
+};
+
+window.closeChallengeInfoEditor = function() {
+    document.getElementById('challengeInfoEditorModal').classList.remove('active');
+    currentInfoSection = null;
+};
+
+window.insertInfoText = function(before, after = '') {
+    const textarea = document.getElementById('infoEditorText');
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = textarea.value.substring(start, end);
+    const newText = textarea.value.substring(0, start) + before + selectedText + after + textarea.value.substring(end);
+    
+    textarea.value = newText;
+    textarea.focus();
+    
+    if (selectedText) {
+        textarea.setSelectionRange(start + before.length, end + before.length);
+    } else {
+        textarea.setSelectionRange(start + before.length, start + before.length);
+    }
+    
+    updateInfoPreview();
+};
+
+function updateInfoPreview() {
+    const text = document.getElementById('infoEditorText').value;
+    const preview = document.getElementById('infoEditorPreview');
+    
+    let formatted = text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/^• (.+)$/gm, '<li>$1</li>')
+        .replace(/---/g, '<hr style="border: 1px solid #e0e0e0; margin: 10px 0;">')
+        .replace(/\n/g, '<br>');
+    
+    formatted = formatted.replace(/(<li>.*<\/li>)/s, '<ul style="margin: 10px 0; padding-left: 20px;">$1</ul>');
+    
+    preview.innerHTML = formatted || '<em style="color: #999;">Preview will appear here...</em>';
+}
+
+window.saveChallengeInfoSection = async function() {
+    if (!isAdmin || !currentInfoSection) return;
+    
+    const text = document.getElementById('infoEditorText').value.trim();
+    
+    if (!text) {
+        alert('Please enter content!');
+        return;
+    }
+    
+    try {
+        // Save to Firebase
+        await setDoc(doc(db, 'settings', 'challengeInfo'), {
+            [currentInfoSection]: text,
+            [`${currentInfoSection}_updatedBy`]: currentUser.email,
+            [`${currentInfoSection}_updatedAt`]: new Date().toISOString()
+        }, { merge: true });
+        
+        // Update the display
+        let formatted = text
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/^• (.+)$/gm, '<li>$1</li>')
+            .replace(/---/g, '<hr style="border: 1px solid #e0e0e0; margin: 10px 0;">')
+            .replace(/\n/g, '<br>');
+        
+        formatted = formatted.replace(/(<li>.*<\/li>)/s, '<ul style="margin: 10px 0; padding-left: 20px;">$1</ul>');
+        
+        document.getElementById(`${currentInfoSection}Content`).innerHTML = formatted;
+        
+        closeChallengeInfoEditor();
+        alert('Section updated! ✅');
+        
+    } catch (error) {
+        console.error('Update challenge info error:', error);
+        alert('Failed to update section: ' + error.message);
+    }
+};
+
+// Add event listener for live preview
+document.addEventListener('DOMContentLoaded', function() {
+    const infoEditor = document.getElementById('infoEditorText');
+    if (infoEditor) {
+        infoEditor.addEventListener('input', updateInfoPreview);
+    }
+});
+
+async function loadChallengeInfo() {
+    try {
+        const infoDoc = await getDoc(doc(db, 'settings', 'challengeInfo'));
+        
+        if (infoDoc.exists()) {
+            const data = infoDoc.data();
+            
+            // Update each section if it exists in Firebase
+            const sections = ['overview', 'goodFoods', 'restrictedFoods', 'proteinSources', 'veggieGuide', 'carbSources', 'hydration', 'faqs'];
+            
+            sections.forEach(section => {
+                if (data[section]) {
+                    let formatted = data[section]
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                        .replace(/^• (.+)$/gm, '<li>$1</li>')
+                        .replace(/---/g, '<hr style="border: 1px solid #e0e0e0; margin: 10px 0;">')
+                        .replace(/\n/g, '<br>');
+                    
+                    formatted = formatted.replace(/(<li>.*<\/li>)/s, '<ul style="margin: 10px 0; padding-left: 20px;">$1</ul>');
+                    
+                    document.getElementById(`${section}Content`).innerHTML = formatted;
+                }
+            });
+        }
+        
+        // Show edit buttons if admin
+        if (isAdmin) {
+            const sections = ['overview', 'goodFoods', 'restrictedFoods', 'proteinSources', 'veggieGuide', 'carbSources', 'hydration', 'faqs'];
+            sections.forEach(section => {
+                const btn = document.getElementById(`edit${section.charAt(0).toUpperCase() + section.slice(1)}Btn`);
+                if (btn) btn.style.display = 'inline-block';
+            });
+        }
+        
+    } catch (error) {
+        console.error('Load challenge info error:', error);
+    }
+}
 
 // ===== LEADERBOARD WITH PAGINATION =====
 
