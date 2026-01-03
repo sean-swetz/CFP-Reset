@@ -875,7 +875,7 @@ async function loadTeamsPage() {
         
         const teamGroups = {
             red: [], blue: [], green: [], yellow: [],
-            purple: [], orange: [], pink: [], teal: [], black: [], brown:[], none: []
+            purple: [], orange: [], pink: [], teal: [], black: [], brown: [], none: []
         };
 
         querySnapshot.forEach((doc) => {
@@ -897,8 +897,8 @@ async function loadTeamsPage() {
             .map(color => ({
                 color,
                 name: teamNames[color] || `${color.toUpperCase()} TEAM`,
-                members: teamGroups[color],
-                totalPoints: teamGroups[color].reduce((sum, m) => sum + (m.totalPoints || 0), 0)
+                members: teamGroups[color] || [],
+                totalPoints: (teamGroups[color] || []).reduce((sum, m) => sum + (m.totalPoints || 0), 0)
             }))
             .filter(t => t.members.length > 0)
             .sort((a, b) => b.totalPoints - a.totalPoints);
