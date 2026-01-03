@@ -262,7 +262,7 @@ async function loadMessages() {
                 ? `<button class="delete-message-btn" onclick="deleteMessage('${messageId}')">Delete</button>`
                 : '';
             
-           // Check if message has a GIF and/or text
+            // Check if message has a GIF and/or text
             let messageContent = '';
             
             if (msg.gifUrl) {
@@ -272,7 +272,7 @@ async function loadMessages() {
                    </div>`;
             }
             
-            if (msg.text) {
+            if (msg.text && msg.text.trim()) {  // ADD .trim() check here
                 messageContent += `<div class="message-text">${escapeHtml(msg.text)}</div>`;
             }
             
@@ -1148,7 +1148,6 @@ async function loadTeamMessages() {
                 ? `<button class="delete-message-btn" onclick="deleteTeamMessage('${messageId}')">Delete</button>`
                 : '';
             
-            // Check if message has a GIF
            // Check if message has a GIF and/or text
             let messageContent = '';
             
@@ -1159,7 +1158,7 @@ async function loadTeamMessages() {
                    </div>`;
             }
             
-            if (msg.text) {
+            if (msg.text && msg.text.trim()) {  // ADD .trim() check here
                 messageContent += `<div class="message-text">${escapeHtml(msg.text)}</div>`;
             }
             
