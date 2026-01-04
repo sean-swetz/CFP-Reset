@@ -1722,7 +1722,11 @@ input[type="number"]:focus {
 }
 
 .message-gif img {
-    width: 100%;
+    max-width: 250px;
+    max-heaight: 250px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
     display: block;
     border-radius: 8px;
 }
