@@ -561,7 +561,6 @@ document.getElementById('checkinForm').addEventListener('submit', async (e) => {
     }
 });
 
-// Check-in window control
 async function checkCheckinWindow() {
     try {
         const windowDoc = await getDoc(doc(db, 'settings', 'checkinWindow'));
@@ -577,7 +576,7 @@ async function checkCheckinWindow() {
                     You can fill out your check-in now, and submit it when the window opens!
                 </div>
             `;
-            // Disable ONLY the submit button, not the form
+            // Disable ONLY the submit button
             submitBtn.disabled = true;
             submitBtn.textContent = 'Window Closed - Cannot Submit Yet';
         } else {
