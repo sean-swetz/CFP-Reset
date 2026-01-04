@@ -37,6 +37,7 @@ let allLeaderboardData = [];
 let currentPage = 1;
 const ITEMS_PER_PAGE = 10;
 let isSearching = false;
+let isLoadingDraft = false;
 
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', function() {
@@ -335,7 +336,7 @@ window.showSection = function(sectionName) {
 
 // Save draft to Firebase
 async function saveDraft() {
-    if (!currentUser) return;
+    if (!currentUser || isLoadingDraft) return; 
     
     try {
         // Collect all checked criteria
@@ -374,6 +375,8 @@ async function saveDraft() {
 // Load draft from Firebase
 async function loadDraft() {
     if (!currentUser) return;
+
+    isLoadingDraft = true;
     
     try {
         const draftDoc = await getDoc(doc(db, 'checkinDrafts', currentUser.uid));
@@ -414,6 +417,10 @@ async function loadDraft() {
     } catch (error) {
         console.error('Load draft error:', error);
     }
+    
+    finally {
+    isLoadingDraft = false;
+}
 }
 
 // Delete draft after successful submission
