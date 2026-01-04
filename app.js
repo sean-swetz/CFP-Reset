@@ -615,7 +615,20 @@ window.toggleCheckinWindow = async function(open) {
         alert('Failed to update check-in window');
     }
 };
-
+// Toggle challenge accordion
+window.toggleChallenge = function() {
+    const content = document.getElementById('challengeContent');
+    const header = document.querySelector('.challenge-header-collapsible');
+    const icon = header.querySelector('.toggle-icon');
+    
+    content.classList.toggle('collapsed');
+    
+    if (content.classList.contains('collapsed')) {
+        icon.textContent = '▼';
+    } else {
+        icon.textContent = '▲';
+    }
+};
 // ===== CHALLENGE INFO EDITOR =====
 let currentInfoSection = null;
 
