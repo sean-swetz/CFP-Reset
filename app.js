@@ -568,34 +568,31 @@ async function checkCheckinWindow() {
         const isOpen = windowDoc.exists() ? windowDoc.data().isOpen !== false : true;
         
         const banner = document.getElementById('checkinWindowBanner');
-        const form = document.getElementById('checkinForm');
         const submitBtn = document.getElementById('checkinBtn');
         
         if (!isOpen) {
             banner.innerHTML = `
                 <div class="checkin-closed-banner">
-                    <strong>🚫 Check-In Window is Currently Closed</strong>
-                    Check back later or contact your gym administrator.
+                    <strong>📝 Check-In Window is Currently Closed</strong>
+                    You can fill out your check-in now, and submit it when the window opens!
                 </div>
             `;
-            form.style.opacity = '0.5';
-            form.style.pointerEvents = 'none';
+            // Disable ONLY the submit button, not the form
             submitBtn.disabled = true;
+            submitBtn.textContent = 'Window Closed - Cannot Submit Yet';
         } else {
             banner.innerHTML = `
                 <div class="checkin-open-banner">
-                    ✅ Check-in window is open! Submit your weekly progress below.
+                    ✅ Check-in window is open! You can now submit your check-in.
                 </div>
             `;
-            form.style.opacity = '1';
-            form.style.pointerEvents = 'auto';
             submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit Check-In';
         }
     } catch (error) {
         console.error('Check window error:', error);
     }
 }
-
 window.toggleCheckinWindow = async function(open) {
     if (!isAdmin) return;
 
