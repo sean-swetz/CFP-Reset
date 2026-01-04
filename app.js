@@ -616,21 +616,26 @@ window.toggleCheckinWindow = async function(open) {
     }
 };
 window.toggleChallenge = function() {
-    const content = document.getElementById('challengeContent');
-    const icon = document.querySelector('.toggle-icon');
-    
-    if (!content || !icon) {
-        console.error('Challenge elements not found');
-        return;
-    }
-    
-    content.classList.toggle('collapsed');
-    
-    if (content.classList.contains('collapsed')) {
-        icon.textContent = '▼';
-    } else {
-        icon.textContent = '▲';
-    }
+    // Add a small delay to ensure DOM is ready
+    setTimeout(() => {
+        const content = document.getElementById('challengeContent');
+        const icon = document.querySelector('.toggle-icon');
+        
+        if (!content || !icon) {
+            console.error('Challenge elements not found');
+            console.log('content:', content);
+            console.log('icon:', icon);
+            return;
+        }
+        
+        content.classList.toggle('collapsed');
+        
+        if (content.classList.contains('collapsed')) {
+            icon.textContent = '▼';
+        } else {
+            icon.textContent = '▲';
+        }
+    }, 10);
 };
 // ===== CHALLENGE INFO EDITOR =====
 let currentInfoSection = null;
