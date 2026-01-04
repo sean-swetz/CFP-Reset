@@ -1383,6 +1383,19 @@ input[type="number"]:focus {
     transition: transform 0.3s;
     flex-shrink: 0; /* ADD THIS */
 }
+.challenge-content-collapsible {
+    max-height: 1000px;
+    overflow: hidden;
+    transition: max-height 0.4s ease, opacity 0.3s, margin-top 0.3s;
+    opacity: 1;
+    margin-top: 15px;
+}
+
+.challenge-content-collapsible.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+}
 /* Hide mobile view on desktop */
 .leaderboard-mobile {
     display: none;
