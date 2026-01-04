@@ -1384,18 +1384,13 @@ input[type="number"]:focus {
     flex-shrink: 0; /* ADD THIS */
 }
 /* Collapsible Challenge Content */
-.locker-room-challenge .challenge-content-collapsible {
-    max-height: 1000px;
-    overflow: hidden;
-    transition: max-height 0.4s ease, opacity 0.3s, margin-top 0.3s;
-    opacity: 1;
-    margin-top: 15px;
+.challenge-content-collapsible {
+    display: block;
+    transition: all 0.3s ease;
 }
 
-.locker-room-challenge .challenge-content-collapsible.collapsed {
-    max-height: 0 !important;
-    opacity: 0 !important;
-    margin-top: 0 !important;
+.challenge-content-collapsible.collapsed {
+    display: none;
 }
 /* Hide mobile view on desktop */
 .leaderboard-mobile {
