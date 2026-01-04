@@ -2172,21 +2172,25 @@ async function loadCheckInCriteria() {
         
         container.innerHTML = html;
         
-        // Add event listeners to all checkboxes
-        document.querySelectorAll('#dynamicCriteria input[type="checkbox"]').forEach(checkbox => {
-            checkbox.addEventListener('change', calculateDynamicScore);
-            saveDraft(); 
-        });
-        
-        // Add event listeners to all counter inputs
-        document.querySelectorAll('#dynamicCriteria input[type="number"]').forEach(counter => {
-            counter.addEventListener('input', calculateDynamicScore);
-            saveDraft();
-        });
-        
+// Add event listeners to all checkboxes
+document.querySelectorAll('#dynamicCriteria input[type="checkbox"]').forEach(checkbox => {
+    checkbox.addEventListener('change', () => {
+        calculateDynamicScore();
+        saveDraft();
+    });
+});
+
+// Add event listeners to all counter inputs
+document.querySelectorAll('#dynamicCriteria input[type="number"]').forEach(counter => {
+    counter.addEventListener('input', () => {
+        calculateDynamicScore();
+        saveDraft();
+    });
+});
         calculateDynamicScore();
         // Load saved draft
         loadDraft();
+        
     } catch (error) {
         console.error('Load check-in criteria error:', error);
         document.getElementById('dynamicCriteria').innerHTML = 
