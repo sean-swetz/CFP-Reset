@@ -331,6 +331,145 @@ window.showSection = function(sectionName) {
         loadAdminData();
     }
 };
+// ===== CHECK-IN DRAFT AUTO-SAVE =====
+
+// Save draft to Firebase
+async function saveDraft() {
+    if (!currentUser) return;
+    
+    try {
+        // Collect all checked criteria
+        const draftData = {
+            checkboxes: [],
+            counters: {}
+        };
+        
+        // Save checked checkboxes
+        document.querySelectorAll('.criteria-check:checked').forEach(checkbox => {
+            draftData.checkboxes.push(checkbox.id);
+        });
+        
+        // Save counter values
+        document.querySelectorAll('.criteria-counter').forEach(counter => {
+            const value = parseInt(counter.value) || 0;
+            if (value > 0) {
+                draftData.counters[counter.id] = value;
+            }
+        });
+        
+        // Save to Firebase
+        await setDoc(doc(db, 'checkinDrafts', currentUser.uid), {
+            ...draftData,
+            lastSaved: new Date().toISOString()
+        });
+        
+        // Show "Draft saved" indicator
+        showDraftSaved();
+        
+    } catch (error) {
+        console.error('Save draft error:', error);
+    }
+}
+
+// Load draft from Firebase
+async function loadDraft() {
+    if (!currentUser) return;
+    
+    try {
+        const draftDoc = await getDoc(doc(db, 'checkinDrafts', currentUser.uid));
+        
+        if (draftDoc.exists()) {
+            const draft = draftDoc.data();
+            
+            // Restore checked checkboxes
+            if (draft.checkboxes) {
+                draft.checkboxes.forEach(checkboxId => {
+                    const checkbox = document.getElementById(checkboxId);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                    }
+                });
+            }
+            
+            // Restore counter values
+            if (draft.counters) {
+                Object.entries(draft.counters).forEach(([counterId, value]) => {
+                    const counter = document.getElementById(counterId);
+                    if (counter) {
+                        counter.value = value;
+                    }
+                });
+            }
+            
+            // Recalculate score
+            calculateDynamicScore();
+            
+            // Show draft loaded message
+            if (draft.lastSaved) {
+                const savedDate = new Date(draft.lastSaved);
+                const timeAgo = getTimeAgo(savedDate);
+                showDraftLoaded(timeAgo);
+            }
+        }
+    } catch (error) {
+        console.error('Load draft error:', error);
+    }
+}
+
+// Delete draft after successful submission
+async function deleteDraft() {
+    if (!currentUser) return;
+    
+    try {
+        await deleteDoc(doc(db, 'checkinDrafts', currentUser.uid));
+    } catch (error) {
+        console.error('Delete draft error:', error);
+    }
+}
+
+// Show "Draft saved" indicator
+function showDraftSaved() {
+    let indicator = document.getElementById('draftIndicator');
+    
+    if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'draftIndicator';
+        indicator.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #9BFB02;
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        `;
+        document.body.appendChild(indicator);
+    }
+    
+    indicator.textContent = '✓ Draft saved';
+    indicator.style.opacity = '1';
+    
+    setTimeout(() => {
+        indicator.style.opacity = '0';
+    }, 2000);
+}
+
+// Show "Draft loaded" message
+function showDraftLoaded(timeAgo) {
+    const banner = document.getElementById('checkinWindowBanner');
+    const existingContent = banner.innerHTML;
+    
+    banner.innerHTML = existingContent + `
+        <div style="background: #e3f2fd; padding: 10px; border-radius: 8px; margin-top: 10px; color: #1976d2;">
+            📝 <strong>Draft restored</strong> - Last saved ${timeAgo}
+        </div>
+    `;
+}
 // Check-in Functionality
 document.getElementById('checkinForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -405,9 +544,13 @@ document.getElementById('checkinForm').addEventListener('submit', async (e) => {
         document.getElementById('checkinForm').reset();
         calculateDynamicScore();
 
+        // Delete the draft after successful submission
+        await deleteDraft(); 
+        
         setTimeout(() => {
             successMsg.style.display = 'none';
         }, 5000);
+
 
     } catch (error) {
         console.error('Check-in error:', error);
@@ -2036,15 +2179,18 @@ async function loadCheckInCriteria() {
         // Add event listeners to all checkboxes
         document.querySelectorAll('#dynamicCriteria input[type="checkbox"]').forEach(checkbox => {
             checkbox.addEventListener('change', calculateDynamicScore);
+            saveDraft(); 
         });
         
         // Add event listeners to all counter inputs
         document.querySelectorAll('#dynamicCriteria input[type="number"]').forEach(counter => {
             counter.addEventListener('input', calculateDynamicScore);
+            saveDraft();
         });
         
         calculateDynamicScore();
-        
+        // Load saved draft
+        loadDraft();
     } catch (error) {
         console.error('Load check-in criteria error:', error);
         document.getElementById('dynamicCriteria').innerHTML = 
