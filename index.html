@@ -473,15 +473,21 @@
                 <h2>💬 The Locker Room</h2>
                 <p style="color: #666; margin-bottom: 20px;">Share PRs, wins, and talk with your teammates!</p>
 
-                <div class="locker-room-challenge" id="weeklyChallenge">
+            <!-- This Week's Challenge - Collapsible -->
+            <div class="locker-room-challenge">
+                <div class="challenge-header-collapsible" onclick="toggleChallenge()">
                     <h3>🎯 This Week's Challenge</h3>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="challenge-content-collapsible collapsed" id="challengeContent">
                     <div class="challenge-text" id="challengeText">
-                        Loading challenge...
+                        No challenge set yet. Check back soon!
                     </div>
-                    <button class="edit-challenge-btn" id="editChallengeBtn" style="display: none;" onclick="editChallenge()">
+                    <button id="editChallengeBtn" onclick="editChallenge()" class="edit-challenge-btn" style="display: none;">
                         ✏️ Edit Challenge
                     </button>
                 </div>
+            </div>
 
                 <h3 style="margin-bottom: 15px;">📢 Message Board</h3>
                 <div class="messages-container" id="messagesContainer">
