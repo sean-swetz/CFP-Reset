@@ -615,11 +615,14 @@ window.toggleCheckinWindow = async function(open) {
         alert('Failed to update check-in window');
     }
 };
-// Toggle challenge accordion
 window.toggleChallenge = function() {
     const content = document.getElementById('challengeContent');
-    const header = document.querySelector('.challenge-header-collapsible');
-    const icon = header.querySelector('.toggle-icon');
+    const icon = document.querySelector('.toggle-icon');
+    
+    if (!content || !icon) {
+        console.error('Challenge elements not found');
+        return;
+    }
     
     content.classList.toggle('collapsed');
     
