@@ -1357,6 +1357,42 @@ input[type="number"]:focus {
         text-align: right;
     }
 }
+/* Collapsible Challenge */
+.challenge-header-collapsible {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    transition: opacity 0.2s;
+}
+
+.challenge-header-collapsible:hover {
+    opacity: 0.9;
+}
+
+.challenge-header-collapsible h3 {
+    margin: 0;
+}
+
+.toggle-icon {
+    font-size: 1.2em;
+    transition: transform 0.3s;
+}
+
+.challenge-content-collapsible {
+    max-height: 1000px;
+    overflow: hidden;
+    transition: max-height 0.4s ease, opacity 0.3s, margin-top 0.3s;
+    opacity: 1;
+    margin-top: 15px;
+}
+
+.challenge-content-collapsible.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+}
 
 /* Hide mobile view on desktop */
 .leaderboard-mobile {
