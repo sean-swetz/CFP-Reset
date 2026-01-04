@@ -1365,6 +1365,8 @@ input[type="number"]:focus {
     cursor: pointer;
     user-select: none;
     transition: opacity 0.2s;
+    flex-wrap: nowrap; /* ADD THIS */
+    gap: 15px; /* ADD THIS */
 }
 
 .challenge-header-collapsible:hover {
@@ -1373,27 +1375,14 @@ input[type="number"]:focus {
 
 .challenge-header-collapsible h3 {
     margin: 0;
+    flex: 1; /* ADD THIS */
 }
 
 .toggle-icon {
     font-size: 1.2em;
     transition: transform 0.3s;
+    flex-shrink: 0; /* ADD THIS */
 }
-
-.challenge-content-collapsible {
-    max-height: 1000px;
-    overflow: hidden;
-    transition: max-height 0.4s ease, opacity 0.3s, margin-top 0.3s;
-    opacity: 1;
-    margin-top: 15px;
-}
-
-.challenge-content-collapsible.collapsed {
-    max-height: 0;
-    opacity: 0;
-    margin-top: 0;
-}
-
 /* Hide mobile view on desktop */
 .leaderboard-mobile {
     display: none;
