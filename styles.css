@@ -2059,28 +2059,33 @@ button[id^="edit"][id$="Btn"] {
     border-color: #333333;
 }
 
-/* Brown Team */
-.team-brown {
-    background: linear-gradient(135deg, #6F4E37 0%, #8B6F47 100%);
-    border-left: 5px solid #6F4E37;
+/* Silver Team */
+.team-silver {
+    background: linear-gradient(135deg, #C0C0C0 0%, #D3D3D3 100%);
+    border-left: 5px solid #C0C0C0;
 }
 
-.team-badge.team-brown {
-    background: #6F4E37;
+.team-badge.team-silver {
+    background: #C0C0C0;
+    color: #333;
 }
 
-.team-channel-btn.team-brown {
-    background: #6F4E37;
-    border-color: #6F4E37;
+.team-channel-btn.team-silver {
+    background: #C0C0C0;
+    border-color: #C0C0C0;
+    color: #333;
 }
 
-.team-channel-btn.team-brown:hover,
-.team-channel-btn.team-brown.active {
-    background: #8B6F47;
-    border-color: #8B6F47;
+.team-channel-btn.team-silver:hover,
+.team-channel-btn.team-silver.active {
+    background: #D3D3D3;
+    border-color: #D3D3D3;
+}
+
+:root {
+    --team-silver: #C0C0C0;
 }
 
 :root {
     --team-black: #1a1a1a;
-    --team-brown: #6F4E37;
 }
