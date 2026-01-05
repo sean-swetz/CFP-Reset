@@ -547,8 +547,8 @@
                             <button class="team-channel-btn team-black" onclick="switchTeamChannel('black')" style="display: none;">
                                 ⚫ Black
                             </button>
-                            <button class="team-channel-btn team-brown" onclick="switchTeamChannel('brown')" style="display: none;">
-                                🟤 Brown
+                            <button class="team-channel-btn team-silver" onclick="switchTeamChannel('silver')" style="display: none;">
+                                🟤 silver
                             </button>
                         </div>
                         <p id="currentChannelName" style="margin-top: 10px; color: #666; font-weight: 600;"></p>
@@ -758,9 +758,9 @@
                                    onkeypress="if(event.key==='Enter'){event.preventDefault();this.blur();}">
                         </div>
                         <div style="background: #6F4E37; padding: 15px; border-radius: 10px; color: white;">
-                            <strong>🟤 Brown Team</strong>
-                            <input type="text" class="team-name-input" id="teamName_brown" placeholder="e.g., Brown Bears" 
-                                   onblur="window.updateTeamName('brown', this.value)"
+                            <strong>⚪ Silver Team</strong>
+                            <input type="text" class="team-name-input" id="teamName_silver" placeholder="e.g., silver Bears" 
+                                   onblur="window.updateTeamName('silver', this.value)"
                                    onkeypress="if(event.key==='Enter'){event.preventDefault();this.blur();}">
                         </div>
                     </div>
@@ -805,8 +805,8 @@
                         <button onclick="exportTeamData('black')" class="btn btn-secondary">
                         ⚫ Export Black Team
                         </button>
-                        <button onclick="exportTeamData('brown')" class="btn btn-secondary">
-                            🟤 Export Brown Team
+                        <button onclick="exportTeamData('silver')" class="btn btn-secondary">
+                            ⚪ Export Silver Team
                         </button>
                     </div>
                 </div>
