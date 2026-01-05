@@ -2860,7 +2860,7 @@ window.announceWeeklyWinners = async function() {
             pink: { points: 0, members: 0, name: 'Pink Team' },
             teal: { points: 0, members: 0, name: 'Teal Team' },
             black: { points: 0, members: 0, name: 'Black Team' },  // ADD THIS
-            silver: { points: 0, members: 0, name: ' Team' },
+            silver: { points: 0, members: 0, name: 'Silver Team' },
         };
         
         // Calculate individual and team winners
