@@ -840,7 +840,7 @@ async function loadLeaderboard() {
             pink: { points: 0, members: 0 },
             teal: { points: 0, members: 0 },
             black: { points: 0, members: 0 },  
-            brown: { points: 0, members: 0 }  
+            silver: { points: 0, members: 0 }  
         };
 
         querySnapshot.forEach((doc) => {
@@ -1051,7 +1051,7 @@ async function loadTeamsPage() {
         
         const teamGroups = {
             red: [], blue: [], green: [], yellow: [],
-            purple: [], orange: [], pink: [], teal: [], black: [], brown: [], none: []
+            purple: [], orange: [], pink: [], teal: [], black: [], silver: [], none: []
         };
 
         querySnapshot.forEach((doc) => {
@@ -1068,7 +1068,7 @@ async function loadTeamsPage() {
 
         let html = '';
 
-        const teamColors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'teal', 'black', 'brown'];
+        const teamColors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'teal', 'black', 'silver'];
         const teamsWithMembers = teamColors
             .map(color => ({
                 color,
@@ -1714,7 +1714,7 @@ async function loadAdminData() {
         const teamNamesDoc = await getDoc(doc(db, 'settings', 'teamNames'));
         if (teamNamesDoc.exists()) {
             const teamNames = teamNamesDoc.data();
-            ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'teal', 'black', 'brown'].forEach(color => {
+            ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'teal', 'black', 'silver'].forEach(color => {
                 const input = document.getElementById(`teamName_${color}`);
                 if (input && teamNames[color]) {
                     input.value = teamNames[color];
@@ -1768,7 +1768,7 @@ async function loadAdminData() {
                         <option value="pink" ${user.team === 'pink' ? 'selected' : ''}>🩷 Pink</option>
                         <option value="teal" ${user.team === 'teal' ? 'selected' : ''}>🩵 Teal</option>
                         <option value="black" ${user.team === 'black' ? 'selected' : ''}>⚫ Black</option>
-                        <option value="brown" ${user.team === 'brown' ? 'selected' : ''}>🟤 Brown</option>
+                        <option value="silver" ${user.team === 'silver' ? 'selected' : ''}>⚪ Silver</option>
                     </select>
                     <button class="small-btn ${user.isCaptain ? 'btn-show' : 'btn-secondary'}" 
                             onclick="window.toggleCaptain('${user.uid}', ${!user.isCaptain})"
@@ -2703,7 +2703,7 @@ window.switchTeamChannel = function(teamColor) {
         pink: '🩷 Pink Team',
         teal: '🩵 Teal Team',
         black: '⚫ Black Team',  
-        brown: '🟤 Brown Team'   
+        silver: '⚪ Silver Team'   
     };
     document.getElementById('currentChannelName').textContent = `Current Channel: ${teamNames[teamColor]}`;
     
@@ -2860,7 +2860,7 @@ window.announceWeeklyWinners = async function() {
             pink: { points: 0, members: 0, name: 'Pink Team' },
             teal: { points: 0, members: 0, name: 'Teal Team' },
             black: { points: 0, members: 0, name: 'Black Team' },  // ADD THIS
-            brown: { points: 0, members: 0, name: 'Brown Team' },
+            : { points: 0, members: 0, name: ' Team' },
         };
         
         // Calculate individual and team winners
