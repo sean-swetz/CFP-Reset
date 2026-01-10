@@ -580,7 +580,8 @@ async function checkCheckinWindow() {
             banner.innerHTML = `
                 <div class="checkin-closed-banner">
                     <strong>📝 Check-In Window is Currently Closed</strong>
-                    You can fill out your check-in now, and submit it when the window opens!
+                    <p style="margin: 10px 0 0 0;">You can fill out your check-in now, and submit it when the window opens!</p>
+                    <p style="margin: 10px 0 0 0; font-size: 0.95em;">⏰ <strong>Schedule:</strong> Opens Sundays at 5:00 PM • Closes Mondays at 5:00 PM</p>
                 </div>
             `;
             // Disable ONLY the submit button
@@ -589,7 +590,8 @@ async function checkCheckinWindow() {
         } else {
             banner.innerHTML = `
                 <div class="checkin-open-banner">
-                    ✅ Check-in window is open! You can now submit your check-in.
+                    <strong>✅ Check-in window is open! You can now submit your check-in.</strong>
+                    <p style="margin: 10px 0 0 0; font-size: 0.95em;">⏰ Window closes Monday at 5:00 PM</p>
                 </div>
             `;
             submitBtn.disabled = false;
