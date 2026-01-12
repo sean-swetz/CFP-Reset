@@ -1,4 +1,4 @@
-// Reset 2026 - Main Application JavaScript
+ // Reset 2026 - Main Application JavaScript
 // CrossFit Prosperity - Nutrition & Fitness Challenge Tracker
 // Import Firebase modules
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
@@ -494,7 +494,7 @@ document.getElementById('checkinForm').addEventListener('submit', async (e) => {
         
         if (hoursSinceLastCheckin < 24) {
             const hoursRemaining = Math.ceil(24 - hoursSinceLastCheckin);
-            alert(`⚠️ You already submitted a check-in ${Math.floor(hoursSinceLastCheckin)} hours ago!\n\nYou can submit again in ${hoursRemaining} hours.\n\nIf this was a mistake, contact an admin.`);
+            alert(`⚠️ You already submitted a check-in ${Math.floor(hoursSinceLastCheckin)} hours ago!\n\nYou cannot submit until next week.\n\nIf this was a mistake, contact an your captian.`);
             return;
         }
     }
