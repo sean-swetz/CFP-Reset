@@ -494,7 +494,7 @@ document.getElementById('checkinForm').addEventListener('submit', async (e) => {
         
         if (hoursSinceLastCheckin < 24) {
             const hoursRemaining = Math.ceil(24 - hoursSinceLastCheckin);
-            alert(`⚠️ You already submitted a check-in ${Math.floor(hoursSinceLastCheckin)} hours ago!\n\nYou cannot submit until next week.\n\nIf this was a mistake, contact an your captian.`);
+            alert(`⚠️ You already submitted a check-in ${Math.floor(hoursSinceLastCheckin)} hours ago!\n\nYou cannot submit until next week.\n\nIf this was a mistake, contact your captian.`);
             return;
         }
     }
