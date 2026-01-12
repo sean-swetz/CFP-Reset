@@ -484,6 +484,21 @@ document.getElementById('checkinForm').addEventListener('submit', async (e) => {
     if (!currentUser) return;
 
     const btn = document.getElementById('checkinBtn');
+    
+    // Check if they've submitted in the last 24 hours
+    const lastCheckin = currentUser.lastCheckin;
+    if (lastCheckin) {
+        const lastCheckinDate = new Date(lastCheckin);
+        const now = new Date();
+        const hoursSinceLastCheckin = (now - lastCheckinDate) / (1000 * 60 * 60);
+        
+        if (hoursSinceLastCheckin < 24) {
+            const hoursRemaining = Math.ceil(24 - hoursSinceLastCheckin);
+            alert(`⚠️ You already submitted a check-in ${Math.floor(hoursSinceLastCheckin)} hours ago!\n\nYou can submit again in ${hoursRemaining} hours.\n\nIf this was a mistake, contact an admin.`);
+            return;
+        }
+    }
+    
     btn.disabled = true;
     btn.textContent = 'Submitting...';
 
@@ -543,25 +558,37 @@ document.getElementById('checkinForm').addEventListener('submit', async (e) => {
         });
 
         currentUser.totalPoints = (currentUser.totalPoints || 0) + weeklyScore;
+        currentUser.lastCheckin = new Date().toISOString(); // Update local cache
 
+        // Delete the draft after successful submission
+        await deleteDraft();
+
+        // BIG SUCCESS MESSAGE
         const successMsg = document.getElementById('checkinSuccess');
-        successMsg.textContent = `Check-in submitted! You earned ${weeklyScore} points this week. Your total is now ${currentUser.totalPoints} points.`;
+        successMsg.innerHTML = `
+            <div style="font-size: 1.2em; padding: 20px;">
+                <div style="font-size: 3em; margin-bottom: 10px;">✅</div>
+                <strong style="font-size: 1.3em; color: #155724;">CHECK-IN SUBMITTED SUCCESSFULLY!</strong>
+                <p style="margin: 15px 0; font-size: 1.1em;">You earned <strong>${weeklyScore} points</strong> this week!</p>
+                <p style="margin: 10px 0;">Your new total: <strong>${currentUser.totalPoints} points</strong></p>
+                <p style="margin-top: 15px; font-size: 0.95em; color: #666;">You can submit again in 24 hours.</p>
+            </div>
+        `;
         successMsg.style.display = 'block';
         
         document.getElementById('checkinForm').reset();
         calculateDynamicScore();
 
-        // Delete the draft after successful submission
-        await deleteDraft(); 
-        
+        // Scroll to success message
+        successMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
         setTimeout(() => {
             successMsg.style.display = 'none';
-        }, 5000);
-
+        }, 10000); // Show for 10 seconds instead of 5
 
     } catch (error) {
         console.error('Check-in error:', error);
-        alert('Failed to submit check-in. Please try again.');
+        alert('Failed to submit check-in. Please try again or contact an admin.');
     } finally {
         btn.disabled = false;
         btn.textContent = 'Submit Check-In';
