@@ -2247,7 +2247,25 @@ document.querySelectorAll('#dynamicCriteria input[type="number"]').forEach(count
         calculateDynamicScore();
         // Load saved draft
         loadDraft();
-        
+     
+   // FINAL WEEK ONLY - Disable Saturday and Sunday checkboxes
+document.querySelectorAll('[id$="_sat"], [id$="_sun"]').forEach(checkbox => {
+    checkbox.disabled = true;
+    checkbox.checked = false;
+    
+    // Visual styling to show it's disabled
+    const dayCheckbox = checkbox.closest('.day-checkbox');
+    if (dayCheckbox) {
+        dayCheckbox.style.opacity = '0.4';
+        dayCheckbox.style.pointerEvents = 'none';
+    }
+    
+    const label = checkbox.nextElementSibling;
+    if (label) {
+        label.style.textDecoration = 'line-through';
+        label.style.color = '#999';
+    }
+});     
     } catch (error) {
         console.error('Load check-in criteria error:', error);
         document.getElementById('dynamicCriteria').innerHTML = 
