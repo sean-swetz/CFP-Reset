@@ -2230,22 +2230,33 @@ window.exportTeamData = async function(teamColor) {
             return;
         }
 
-        // For each user, get their latest check-in
+        // Get ALL check-ins (no compound query)
+        const allCheckinsQuery = query(collection(db, 'checkins'));
+        const allCheckinsSnapshot = await getDocs(allCheckinsQuery);
+        
+        // Build a map of userId -> their check-ins
+        const userCheckins = {};
+        allCheckinsSnapshot.forEach((doc) => {
+            const checkin = doc.data();
+            if (!userCheckins[checkin.userId]) {
+                userCheckins[checkin.userId] = [];
+            }
+            userCheckins[checkin.userId].push(checkin);
+        });
+
+        // For each user on the team
         for (const userDoc of usersSnapshot.docs) {
             const user = userDoc.data();
-            
-            // Get their most recent check-in
-            const checkinsQuery = query(
-                collection(db, 'checkins'), 
-                where('userId', '==', userDoc.id),
-                orderBy('timestamp', 'desc')
-            );
-            const checkinsSnapshot = await getDocs(checkinsQuery);
+            const userId = userDoc.id;
             
             csv += `"${user.name}","${user.email}","${user.team || 'none'}",${user.totalPoints || 0},`;
             
-            if (!checkinsSnapshot.empty) {
-                const latestCheckin = checkinsSnapshot.docs[0].data();
+            // Get their check-ins and find the latest one
+            const checkins = userCheckins[userId] || [];
+            checkins.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            if (checkins.length > 0) {
+                const latestCheckin = checkins[0];
                 
                 // For each criteria, show what they checked in their latest submission
                 criteriaSnapshot.forEach((criteriaDoc) => {
@@ -2292,7 +2303,7 @@ window.exportTeamData = async function(teamColor) {
         downloadCSV(csv, `reset-2026-${teamColor}-team-detailed.csv`);
     } catch (error) {
         console.error('Export team error:', error);
-        alert('Failed to export team data');
+        alert('Failed to export team data: ' + error.message);
     }
 };
 
