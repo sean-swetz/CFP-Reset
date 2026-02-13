@@ -2127,18 +2127,72 @@ window.exportCheckinsCSV = async function() {
     if (!isAdmin) return;
 
     try {
+        // First, get all criteria to build column headers
+        const criteriaQuery = query(collection(db, 'criteria'), orderBy('order', 'asc'));
+        const criteriaSnapshot = await getDocs(criteriaQuery);
+        
+        const criteriaMap = {};
+        const criteriaHeaders = [];
+        
+        criteriaSnapshot.forEach((doc) => {
+            const criteria = doc.data();
+            criteriaMap[doc.id] = criteria;
+            criteriaHeaders.push(criteria.name);
+        });
+
+        // Build CSV header
+        let csv = 'Name,Email,Weekly Score,Timestamp,';
+        csv += criteriaHeaders.join(',');
+        csv += ',Feedback\n';
+
+        // Get all check-ins
         const checkinsQuery = query(collection(db, 'checkins'), orderBy('timestamp', 'desc'));
         const checkinsSnapshot = await getDocs(checkinsQuery);
 
-        let csv = 'Name,Email,Weekly Score,Protein Days,Water Days,Classes,Recovery Days,Weekly Challenge,Alcohol Days,Late Days,Missed Check-in,Timestamp\n';
-
         checkinsSnapshot.forEach((doc) => {
             const checkin = doc.data();
-            const d = checkin.details || {};
-            csv += `"${checkin.name}","${checkin.email}",${checkin.weeklyScore},${d.protein || 0},${d.water || 0},${d.classes || 0},${d.recovery || 0},${d.weekly || 0},${d.alcohol || 0},${d.late || 0},${d.missed || 0},"${checkin.timestamp}"\n`;
+            
+            // Basic info
+            csv += `"${checkin.name}","${checkin.email}",${checkin.weeklyScore},"${checkin.timestamp}",`;
+            
+            // For each criteria, show what they checked
+            criteriaSnapshot.forEach((criteriaDoc) => {
+                const criteriaId = criteriaDoc.id;
+                const criteriaData = checkin.criteriaData?.[criteriaId];
+                
+                let cellValue = '';
+                
+                if (criteriaData) {
+                    if (Array.isArray(criteriaData)) {
+                        // Daily criteria - show which days
+                        const days = criteriaData.map(id => {
+                            if (id.includes('_mon')) return 'Mon';
+                            if (id.includes('_tue')) return 'Tue';
+                            if (id.includes('_wed')) return 'Wed';
+                            if (id.includes('_thu')) return 'Thu';
+                            if (id.includes('_fri')) return 'Fri';
+                            if (id.includes('_sat')) return 'Sat';
+                            if (id.includes('_sun')) return 'Sun';
+                            return 'Yes';
+                        });
+                        cellValue = days.join(' ');
+                    } else if (typeof criteriaData === 'number') {
+                        // Counter criteria - show the count
+                        cellValue = criteriaData;
+                    } else {
+                        cellValue = 'Yes';
+                    }
+                }
+                
+                csv += `"${cellValue}",`;
+            });
+            
+            // Feedback
+            const feedback = checkin.feedback ? checkin.feedback.replace(/"/g, '""') : '';
+            csv += `"${feedback}"\n`;
         });
 
-        downloadCSV(csv, 'reset-2026-checkins.csv');
+        downloadCSV(csv, 'reset-2026-checkins-detailed.csv');
     } catch (error) {
         console.error('Export check-ins error:', error);
         alert('Failed to export check-ins');
@@ -2149,24 +2203,93 @@ window.exportTeamData = async function(teamColor) {
     if (!isAdmin) return;
 
     try {
-        const usersQuery = query(collection(db, 'users'));
-        const usersSnapshot = await getDocs(usersQuery);
-
-        let csv = 'Name,Email,Team,Total Points,Hidden from Leaderboard,Registered At,Last Check-in\n';
-
-        usersSnapshot.forEach((doc) => {
-            const user = doc.data();
-            if (user.team === teamColor) {
-                csv += `"${user.name}","${user.email}","${user.team || 'none'}",${user.totalPoints || 0},${user.hiddenFromLeaderboard ? 'Yes' : 'No'},"${user.registeredAt || ''}","${user.lastCheckin || ''}"\n`;
-            }
+        // Get all criteria to build column headers
+        const criteriaQuery = query(collection(db, 'criteria'), orderBy('order', 'asc'));
+        const criteriaSnapshot = await getDocs(criteriaQuery);
+        
+        const criteriaMap = {};
+        const criteriaHeaders = [];
+        
+        criteriaSnapshot.forEach((doc) => {
+            const criteria = doc.data();
+            criteriaMap[doc.id] = criteria;
+            criteriaHeaders.push(criteria.name);
         });
 
-        if (csv.split('\n').length <= 2) {
+        // Build CSV header
+        let csv = 'Name,Email,Team,Total Points,';
+        csv += criteriaHeaders.join(',');
+        csv += ',Last Check-in,Feedback\n';
+
+        // Get users on this team
+        const usersQuery = query(collection(db, 'users'), where('team', '==', teamColor));
+        const usersSnapshot = await getDocs(usersQuery);
+
+        if (usersSnapshot.empty) {
             alert(`No members found on ${teamColor} team`);
             return;
         }
 
-        downloadCSV(csv, `reset-2026-${teamColor}-team.csv`);
+        // For each user, get their latest check-in
+        for (const userDoc of usersSnapshot.docs) {
+            const user = userDoc.data();
+            
+            // Get their most recent check-in
+            const checkinsQuery = query(
+                collection(db, 'checkins'), 
+                where('userId', '==', userDoc.id),
+                orderBy('timestamp', 'desc')
+            );
+            const checkinsSnapshot = await getDocs(checkinsQuery);
+            
+            csv += `"${user.name}","${user.email}","${user.team || 'none'}",${user.totalPoints || 0},`;
+            
+            if (!checkinsSnapshot.empty) {
+                const latestCheckin = checkinsSnapshot.docs[0].data();
+                
+                // For each criteria, show what they checked in their latest submission
+                criteriaSnapshot.forEach((criteriaDoc) => {
+                    const criteriaId = criteriaDoc.id;
+                    const criteriaData = latestCheckin.criteriaData?.[criteriaId];
+                    
+                    let cellValue = '';
+                    
+                    if (criteriaData) {
+                        if (Array.isArray(criteriaData)) {
+                            // Daily criteria - show which days
+                            const days = criteriaData.map(id => {
+                                if (id.includes('_mon')) return 'Mon';
+                                if (id.includes('_tue')) return 'Tue';
+                                if (id.includes('_wed')) return 'Wed';
+                                if (id.includes('_thu')) return 'Thu';
+                                if (id.includes('_fri')) return 'Fri';
+                                if (id.includes('_sat')) return 'Sat';
+                                if (id.includes('_sun')) return 'Sun';
+                                return 'Yes';
+                            });
+                            cellValue = days.join(' ');
+                        } else if (typeof criteriaData === 'number') {
+                            // Counter criteria - show the count
+                            cellValue = criteriaData;
+                        } else {
+                            cellValue = 'Yes';
+                        }
+                    }
+                    
+                    csv += `"${cellValue}",`;
+                });
+                
+                csv += `"${latestCheckin.timestamp}",`;
+                const feedback = latestCheckin.feedback ? latestCheckin.feedback.replace(/"/g, '""') : '';
+                csv += `"${feedback}"\n`;
+            } else {
+                // No check-ins for this user - empty cells
+                criteriaSnapshot.forEach(() => csv += ',');
+                csv += ',\n';
+            }
+        }
+
+        downloadCSV(csv, `reset-2026-${teamColor}-team-detailed.csv`);
     } catch (error) {
         console.error('Export team error:', error);
         alert('Failed to export team data');
