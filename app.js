@@ -548,13 +548,14 @@ document.getElementById('checkinForm').addEventListener('submit', async (e) => {
         });
 
         // Save check-in
-    await addDoc(collection(db, 'checkins'), {
+  await addDoc(collection(db, 'checkins'), {
     userId: currentUser.uid,
     name: currentUser.name,
     email: currentUser.email,
     weeklyScore: weeklyScore,
     criteriaData: checkedCriteria,
-    feedback: document.getElementById('finalFeedback').value.trim() || null, // ADD THIS LINE
+    feedback: document.getElementById('finalFeedback').value.trim() || null,
+    appFeedback: document.getElementById('appFeedback').value.trim() || null, // ADD THIS LINE
     timestamp: new Date().toISOString()
 });
 
