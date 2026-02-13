@@ -2203,17 +2203,16 @@ window.exportTeamData = async function(teamColor) {
     if (!isAdmin) return;
 
     try {
+        console.log('Starting export for team:', teamColor);
+        
         // Get all criteria to build column headers
         const criteriaQuery = query(collection(db, 'criteria'), orderBy('order', 'asc'));
         const criteriaSnapshot = await getDocs(criteriaQuery);
+        console.log('Criteria loaded:', criteriaSnapshot.size);
         
-        const criteriaMap = {};
         const criteriaHeaders = [];
-        
         criteriaSnapshot.forEach((doc) => {
-            const criteria = doc.data();
-            criteriaMap[doc.id] = criteria;
-            criteriaHeaders.push(criteria.name);
+            criteriaHeaders.push(doc.data().name);
         });
 
         // Build CSV header
@@ -2224,6 +2223,7 @@ window.exportTeamData = async function(teamColor) {
         // Get users on this team
         const usersQuery = query(collection(db, 'users'), where('team', '==', teamColor));
         const usersSnapshot = await getDocs(usersQuery);
+        console.log('Users on team:', usersSnapshot.size);
 
         if (usersSnapshot.empty) {
             alert(`No members found on ${teamColor} team`);
@@ -2231,8 +2231,10 @@ window.exportTeamData = async function(teamColor) {
         }
 
         // Get ALL check-ins (no compound query)
+        console.log('Fetching all check-ins...');
         const allCheckinsQuery = query(collection(db, 'checkins'));
         const allCheckinsSnapshot = await getDocs(allCheckinsQuery);
+        console.log('Total check-ins:', allCheckinsSnapshot.size);
         
         // Build a map of userId -> their check-ins
         const userCheckins = {};
@@ -2300,9 +2302,13 @@ window.exportTeamData = async function(teamColor) {
             }
         }
 
+        console.log('Export complete, downloading CSV');
         downloadCSV(csv, `reset-2026-${teamColor}-team-detailed.csv`);
     } catch (error) {
-        console.error('Export team error:', error);
+        console.error('Export team error details:', error);
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
         alert('Failed to export team data: ' + error.message);
     }
 };
