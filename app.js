@@ -548,14 +548,15 @@ document.getElementById('checkinForm').addEventListener('submit', async (e) => {
         });
 
         // Save check-in
-        await addDoc(collection(db, 'checkins'), {
-            userId: currentUser.uid,
-            name: currentUser.name,
-            email: currentUser.email,
-            weeklyScore: weeklyScore,
-            criteriaData: checkedCriteria,
-            timestamp: new Date().toISOString()
-        });
+    await addDoc(collection(db, 'checkins'), {
+    userId: currentUser.uid,
+    name: currentUser.name,
+    email: currentUser.email,
+    weeklyScore: weeklyScore,
+    criteriaData: checkedCriteria,
+    feedback: document.getElementById('finalFeedback').value.trim() || null, // ADD THIS LINE
+    timestamp: new Date().toISOString()
+});
 
         currentUser.totalPoints = (currentUser.totalPoints || 0) + weeklyScore;
         currentUser.lastCheckin = new Date().toISOString(); // Update local cache
