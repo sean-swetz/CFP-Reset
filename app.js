@@ -2219,7 +2219,7 @@ window.exportTeamData = async function(teamColor) {
         // Build CSV header
         let csv = 'Name,Email,Team,Total Points,';
         csv += criteriaHeaders.join(',');
-        csv += ',Last Check-in,Feedback\n';
+        csv += ',Last Check-in,Feedback,App Feedback\n';
 
         // Get users on this team
         const usersQuery = query(collection(db, 'users'), where('team', '==', teamColor));
@@ -2293,14 +2293,15 @@ window.exportTeamData = async function(teamColor) {
                     csv += `"${cellValue}",`;
                 });
                 
-                csv += `"${latestCheckin.timestamp}",`;
-                const feedback = latestCheckin.feedback ? latestCheckin.feedback.replace(/"/g, '""') : '';
-                csv += `"${feedback}"\n`;
-            } else {
-                // No check-ins for this user - empty cells
-                criteriaSnapshot.forEach(() => csv += ',');
-                csv += ',\n';
-            }
+            csv += `"${latestCheckin.timestamp}",`;
+            const feedback = latestCheckin.feedback ? latestCheckin.feedback.replace(/"/g, '""') : '';
+            const appFeedback = latestCheckin.appFeedback ? latestCheckin.appFeedback.replace(/"/g, '""') : '';
+            csv += `"${feedback}","${appFeedback}"\n`;
+          } else {
+            // No check-ins for this user - empty cells
+            criteriaSnapshot.forEach(() => csv += ',');
+            csv += ',,\n';  // Two commas for feedback and appFeedback
+        }
         }
 
         console.log('Export complete, downloading CSV');
