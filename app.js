@@ -2192,7 +2192,7 @@ window.exportCheckinsCSV = async function() {
                 
         const feedback = checkin.feedback ? checkin.feedback.replace(/"/g, '""') : '';
         const appFeedback = checkin.appFeedback ? checkin.appFeedback.replace(/"/g, '""') : '';
-        csv += `"${feedback}","${appFeedback}"\n`;  \
+        csv += `"${feedback}","${appFeedback}"\n`;  
         });
 
         downloadCSV(csv, 'reset-2026-checkins-detailed.csv');
